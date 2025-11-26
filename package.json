@@ -7,7 +7,8 @@
     "beefdiff": "./dist/bin.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "package.json"
   ],
   "scripts": {
     "build": "tsc",
