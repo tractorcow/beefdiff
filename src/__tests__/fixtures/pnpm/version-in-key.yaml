@@ -1,0 +1,8 @@
+lockfileVersion: '9.0'
+packages:
+  '@acemir/cssom@0.9.23':
+    resolution:
+      integrity: sha512-2kJ1HxBKzPLbmhZpxBiTZggjtgCwKg1ma5RHShxvd6zgqhDEdEkzpiwe7jLkI2p2BrZvFCXIihdoMkl1H39VnA==
+  'express@4.18.0':
+    resolution:
+      integrity: sha512-abc123

@@ -1,0 +1,6 @@
+lockfileVersion: '9.0'
+packages:
+  express: null
+  lodash:
+    version: 4.17.21
+  invalid: 'not an object'

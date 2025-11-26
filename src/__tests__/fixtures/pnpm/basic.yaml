@@ -1,0 +1,7 @@
+lockfileVersion: '9.0'
+packages:
+  express:
+    version: 4.18.0
+  lodash:
+    version: 4.17.21
+    dev: true
