@@ -176,7 +176,9 @@ describe("NpmResolver", () => {
       expect(expressChange?.toVersion).toBe("4.18.0");
 
       // lodash: 4.17.20 -> 4.17.21 (patch upgrade, dev dependency)
-      const lodashChange = diff.devDependencies.find((c) => c.name === "lodash");
+      const lodashChange = diff.devDependencies.find(
+        (c) => c.name === "lodash"
+      );
       expect(lodashChange).toBeDefined();
       expect(lodashChange?.type).toBe("upgraded");
       expect(lodashChange?.versionChange).toBe("patch");
@@ -230,7 +232,9 @@ describe("NpmResolver", () => {
       expect(expressChange?.toVersion).toBe("4.18.0");
 
       // lodash: 4.17.20 -> 4.17.21 (patch upgrade, dev dependency)
-      const lodashChange = diff.devDependencies.find((c) => c.name === "lodash");
+      const lodashChange = diff.devDependencies.find(
+        (c) => c.name === "lodash"
+      );
       expect(lodashChange).toBeDefined();
       expect(lodashChange?.type).toBe("upgraded");
       expect(lodashChange?.versionChange).toBe("patch");

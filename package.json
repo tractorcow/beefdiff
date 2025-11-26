@@ -16,6 +16,7 @@
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run clean && npm run build",
     "lint": "eslint . --ext .ts",
+    "lint:commits": "commitlint --from HEAD~1 --to HEAD --verbose",
     "format": "prettier --write \"**/*.{ts,json,md}\"",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
@@ -35,6 +36,8 @@
   "author": "Damian Mooyman",
   "license": "ISC",
   "devDependencies": {
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
     "@jest/globals": "^30.2.0",
     "@semantic-release/commit-analyzer": "^13.0.1",
     "@semantic-release/git": "^10.0.1",

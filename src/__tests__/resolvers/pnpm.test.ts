@@ -128,7 +128,9 @@ describe("PnpmResolver", () => {
       expect(expressChange?.toVersion).toBe("4.18.0");
 
       // lodash: 4.17.20 -> 4.17.21 (patch upgrade, dev dependency)
-      const lodashChange = diff.devDependencies.find((c) => c.name === "lodash");
+      const lodashChange = diff.devDependencies.find(
+        (c) => c.name === "lodash"
+      );
       expect(lodashChange).toBeDefined();
       expect(lodashChange?.type).toBe("upgraded");
       expect(lodashChange?.versionChange).toBe("patch");
@@ -202,7 +204,9 @@ describe("PnpmResolver", () => {
 
   describe("extractPackageInfoFromName", () => {
     it("should extract name and version from scoped package with version in key", () => {
-      const result = resolver["extractPackageInfoFromName"]("@scope/package@1.0.0");
+      const result = resolver["extractPackageInfoFromName"](
+        "@scope/package@1.0.0"
+      );
       expect(result).toEqual({
         name: "@scope/package",
         version: "1.0.0",
@@ -286,9 +290,8 @@ describe("PnpmResolver", () => {
     });
 
     it("should handle version with multiple @ symbols in non-scoped package", () => {
-      const result = resolver["extractPackageInfoFromName"](
-        "package@1.0.0@beta"
-      );
+      const result =
+        resolver["extractPackageInfoFromName"]("package@1.0.0@beta");
       expect(result).toEqual({
         name: "package",
         version: "1.0.0@beta",
@@ -304,7 +307,9 @@ describe("PnpmResolver", () => {
     });
 
     it("should handle root scoped package key", () => {
-      const result = resolver["extractPackageInfoFromName"]("@tractorcow/beefdiff");
+      const result = resolver["extractPackageInfoFromName"](
+        "@tractorcow/beefdiff"
+      );
       expect(result).toEqual({
         name: "@tractorcow/beefdiff",
         version: null,

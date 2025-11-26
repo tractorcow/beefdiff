@@ -107,9 +107,7 @@ export class PnpmResolver implements Resolver {
     if (nodeModulesIndex !== -1) {
       // Skip nested modules (only include top-level modules)
       // Check that there's exactly one "node_modules" segment
-      const nodeModulesCount = parts.filter(
-        (p) => p === "node_modules"
-      ).length;
+      const nodeModulesCount = parts.filter((p) => p === "node_modules").length;
       if (nodeModulesCount !== 1) {
         return null; // Skip nested modules (multiple node_modules segments)
       }
@@ -125,7 +123,11 @@ export class PnpmResolver implements Resolver {
 
     // Check if this is a nested path (e.g., "express/node_modules/debug")
     // These should be skipped as they're not top-level
-    if (parts.length > 1 && !key.startsWith("@") && !key.match(/^@[^/]+\/[^/]+$/)) {
+    if (
+      parts.length > 1 &&
+      !key.startsWith("@") &&
+      !key.match(/^@[^/]+\/[^/]+$/)
+    ) {
       return null; // Skip nested paths that aren't scoped packages
     }
 

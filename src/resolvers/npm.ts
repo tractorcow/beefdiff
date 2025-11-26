@@ -133,9 +133,7 @@ export class NpmResolver implements Resolver {
     // For packages structure (v2/v3), key is a path like "node_modules/express"
     // or in monorepos: "apps/my-app/node_modules/@scope/package"
     // Skip nested modules (only include top-level modules)
-    const nodeModulesCount = parts.filter(
-      (p) => p === "node_modules"
-    ).length;
+    const nodeModulesCount = parts.filter((p) => p === "node_modules").length;
     if (nodeModulesCount !== 1) {
       return null; // Skip nested modules (multiple node_modules segments)
     }
