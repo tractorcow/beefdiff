@@ -1,0 +1,16 @@
+{
+  "name": "test-package",
+  "version": "1.0.0",
+  "lockfileVersion": 3,
+  "packages": {
+    "": {
+      "version": "1.0.0"
+    },
+    "node_modules/@types/node": {
+      "version": "20.0.0"
+    },
+    "node_modules/@tractorcow/beefdiff": {
+      "version": "1.1.1"
+    }
+  }
+}

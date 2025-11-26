@@ -1,0 +1,9 @@
+lockfileVersion: '9.0'
+packages:
+  express:
+    version: 4.18.0
+  'apps/my-app/node_modules/@scope/package':
+    version: 1.0.0
+  'packages/shared/node_modules/lodash':
+    version: 4.17.21
+    dev: true

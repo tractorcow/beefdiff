@@ -1,0 +1,6 @@
+lockfileVersion: '9.0'
+packages:
+  express:
+    version: 4.18.0
+  'express/node_modules/debug':
+    version: 4.3.4

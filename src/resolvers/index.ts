@@ -1,4 +1,4 @@
-import type { Resolver } from "../types.js";
+import type { Resolver } from "../types/index.js";
 import { NpmResolver } from "./npm.js";
 import { ComposerResolver } from "./composer.js";
 import { PnpmResolver } from "./pnpm.js";
