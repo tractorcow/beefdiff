@@ -2,7 +2,7 @@
   "name": "@tractorcow/beefdiff",
   "version": "1.1.0",
   "type": "module",
-  "description": "A package for beefdiff",
+  "description": "Compare lockfile dependencies between two versions. Supports npm, composer, and pnpm lockfiles with detailed version change reports.",
   "bin": {
     "beefdiff": "./dist/bin.js"
   },
@@ -17,8 +17,18 @@
     "lint": "eslint . --ext .ts",
     "format": "prettier --write \"**/*.{ts,json,md}\""
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "lockfile",
+    "dependencies",
+    "diff",
+    "npm",
+    "composer",
+    "pnpm",
+    "package-manager",
+    "version-comparison",
+    "semver"
+  ],
+  "author": "Damian Mooyman",
   "license": "ISC",
   "devDependencies": {
     "@semantic-release/commit-analyzer": "^13.0.1",
