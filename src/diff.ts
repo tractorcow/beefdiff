@@ -1,5 +1,5 @@
 import { compare, valid } from "semver";
-import type { Package, Resolution } from "./types.js";
+import type { Package, Resolution } from "./types/index.js";
 
 export type PackageChangeType = "added" | "removed" | "upgraded";
 
@@ -31,10 +31,7 @@ export function diffResolutions(
   };
 }
 
-function diffPackages(
-  source: Package[],
-  target: Package[]
-): PackageChange[] {
+function diffPackages(source: Package[], target: Package[]): PackageChange[] {
   const sourceMap = new Map<string, Package>();
   const targetMap = new Map<string, Package>();
 

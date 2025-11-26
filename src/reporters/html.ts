@@ -1,5 +1,8 @@
-import type { Reporter } from "./types.js";
-import type { ResolutionDiff, PackageChange } from "../diff.js";
+import type {
+  Reporter,
+  ResolutionDiff,
+  PackageChange,
+} from "../types/index.js";
 
 export class HtmlReporter implements Reporter {
   report(diff: ResolutionDiff): string {
@@ -37,28 +40,36 @@ export class HtmlReporter implements Reporter {
     if (byType.major.length > 0) {
       parts.push("<h2 class='major'>Major Updates</h2>");
       parts.push("<ul>");
-      parts.push(...byType.major.map((c) => `<li>${this.formatChange(c)}</li>`));
+      parts.push(
+        ...byType.major.map((c) => `<li>${this.formatChange(c)}</li>`)
+      );
       parts.push("</ul>");
     }
 
     if (byType.minor.length > 0) {
       parts.push("<h2 class='minor'>Minor Updates</h2>");
       parts.push("<ul>");
-      parts.push(...byType.minor.map((c) => `<li>${this.formatChange(c)}</li>`));
+      parts.push(
+        ...byType.minor.map((c) => `<li>${this.formatChange(c)}</li>`)
+      );
       parts.push("</ul>");
     }
 
     if (byType.patch.length > 0) {
       parts.push("<h2 class='patch'>Patch Updates</h2>");
       parts.push("<ul>");
-      parts.push(...byType.patch.map((c) => `<li>${this.formatChange(c)}</li>`));
+      parts.push(
+        ...byType.patch.map((c) => `<li>${this.formatChange(c)}</li>`)
+      );
       parts.push("</ul>");
     }
 
     if (byType.other.length > 0) {
       parts.push("<h2>Other Changes</h2>");
       parts.push("<ul>");
-      parts.push(...byType.other.map((c) => `<li>${this.formatChange(c)}</li>`));
+      parts.push(
+        ...byType.other.map((c) => `<li>${this.formatChange(c)}</li>`)
+      );
       parts.push("</ul>");
     }
 

@@ -1,0 +1,13 @@
+{
+  "name": "test-package",
+  "version": "1.0.0",
+  "lockfileVersion": 3,
+  "packages": {
+    "node_modules/express": {
+      "dev": false
+    },
+    "node_modules/lodash": {
+      "version": "4.17.21"
+    }
+  }
+}

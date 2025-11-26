@@ -31,21 +31,25 @@ beefdiff [OPTIONS] <source-lockfile> <target-lockfile>
 ### Examples
 
 Compare two npm lockfiles:
+
 ```bash
 beefdiff package-lock.json package-lock-new.json
 ```
 
 Generate an HTML report:
+
 ```bash
 beefdiff --format html --output report.html package-lock.json package-lock-new.json
 ```
 
 Compare composer lockfiles with markdown output:
+
 ```bash
 beefdiff --format markdown composer.lock composer-new.lock
 ```
 
 Manually specify resolver for renamed files:
+
 ```bash
 beefdiff --resolver npm --format markdown old.lock new.lock
 ```
@@ -59,6 +63,7 @@ beefdiff --resolver npm --format markdown old.lock new.lock
 ### Report Structure
 
 Reports are organized by:
+
 - **Dependencies** and **Dev Dependencies** (major headings)
 - **Major Updates**, **Minor Updates**, **Patch Updates**, and **Other Changes** (minor headings)
 

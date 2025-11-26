@@ -1,0 +1,9 @@
+{
+  "_readme": [],
+  "packages-dev": [
+    {
+      "name": "vendor/dev-package",
+      "version": "1.0.0"
+    }
+  ]
+}

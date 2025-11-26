@@ -1,5 +1,8 @@
-import type { Reporter } from "./types.js";
-import type { ResolutionDiff, PackageChange } from "../diff.js";
+import type {
+  Reporter,
+  ResolutionDiff,
+  PackageChange,
+} from "../types/index.js";
 
 export class MarkdownReporter implements Reporter {
   report(diff: ResolutionDiff): string {

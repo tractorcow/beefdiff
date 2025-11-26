@@ -1,0 +1,13 @@
+{
+  "name": "test-package",
+  "version": "1.0.0",
+  "lockfileVersion": 3,
+  "packages": {
+    "": {
+      "version": "1.0.0"
+    },
+    "node_modules/express": {
+      "version": "4.18.0"
+    }
+  }
+}

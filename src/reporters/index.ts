@@ -1,4 +1,4 @@
-import type { Reporter } from "./types.js";
+import type { Reporter } from "../types/index.js";
 import { TextReporter } from "./text.js";
 import { HtmlReporter } from "./html.js";
 import { MarkdownReporter } from "./markdown.js";
