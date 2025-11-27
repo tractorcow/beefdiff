@@ -1,33 +1,22 @@
 import { basename } from "path";
 import { findResolver, getResolverByName } from "../resolvers/index.js";
-import type { Resolver } from "../types/index.js";
-
-export interface ResolverPair {
-  sourceResolver: Resolver;
-  targetResolver: Resolver;
-}
+import type { ResolverPair } from "../types/index.js";
 
 export function lookupResolvers(
   sourceFile: string,
   targetFile: string,
   resolverName?: string
-):
-  | { success: true; resolvers: ResolverPair }
-  | { success: false; error: string } {
+): ResolverPair {
   if (resolverName) {
     const resolver = getResolverByName(resolverName);
     if (!resolver) {
-      return {
-        success: false,
-        error: `Unknown resolver: ${resolverName}. Available: npm, composer, pnpm`,
-      };
+      throw new Error(
+        `Unknown resolver: ${resolverName}. Available: npm, composer, pnpm`
+      );
     }
     return {
-      success: true,
-      resolvers: {
-        sourceResolver: resolver,
-        targetResolver: resolver,
-      },
+      sourceResolver: resolver,
+      targetResolver: resolver,
     };
   }
 
@@ -38,18 +27,14 @@ export function lookupResolvers(
   }
 
   if (!sourceResolver) {
-    return {
-      success: false,
-      error: `No resolver found for source or target files. Source: ${sourceFile}, Target: ${targetFile}`,
-    };
+    throw new Error(
+      `No resolver found for source or target files. Source: ${sourceFile}, Target: ${targetFile}`
+    );
   }
 
   // Use the same resolver for both files
   return {
-    success: true,
-    resolvers: {
-      sourceResolver,
-      targetResolver: sourceResolver,
-    },
+    sourceResolver,
+    targetResolver: sourceResolver,
   };
 }

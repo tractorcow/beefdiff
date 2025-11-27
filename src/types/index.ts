@@ -25,3 +25,6 @@ export type {
 
 // Reporter types
 export type { Reporter } from "./reporter.js";
+
+// CLI types
+export type { CliArgs, ResolverPair } from "./cli.js";

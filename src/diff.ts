@@ -1,22 +1,11 @@
 import { compare, valid } from "semver";
-import type { Package, Resolution } from "./types/index.js";
-
-export type PackageChangeType = "added" | "removed" | "upgraded";
-
-export type VersionChangeType = "major" | "minor" | "patch";
-
-export interface PackageChange {
-  name: string;
-  type: PackageChangeType;
-  versionChange?: VersionChangeType;
-  fromVersion?: string;
-  toVersion?: string;
-}
-
-export interface ResolutionDiff {
-  dependencies: PackageChange[];
-  devDependencies: PackageChange[];
-}
+import type {
+  Package,
+  Resolution,
+  PackageChange,
+  ResolutionDiff,
+  VersionChangeType,
+} from "./types/index.js";
 
 export function diffResolutions(
   source: Resolution,

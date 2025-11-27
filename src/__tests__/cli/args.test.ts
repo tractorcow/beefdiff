@@ -190,29 +190,25 @@ describe("parseArgs", () => {
 });
 
 describe("validateArgs", () => {
-  it("should validate when help is requested", () => {
+  it("should not throw when help is requested", () => {
     const args = {
       help: true,
       version: false,
       format: "text",
     };
-    const result = validateArgs(args);
-
-    expect(result.valid).toBe(true);
+    expect(() => validateArgs(args)).not.toThrow();
   });
 
-  it("should validate when version is requested", () => {
+  it("should not throw when version is requested", () => {
     const args = {
       help: false,
       version: true,
       format: "text",
     };
-    const result = validateArgs(args);
-
-    expect(result.valid).toBe(true);
+    expect(() => validateArgs(args)).not.toThrow();
   });
 
-  it("should validate when both source and target files are provided", () => {
+  it("should not throw when both source and target files are provided", () => {
     const args = {
       sourceFile: "source.lock",
       targetFile: "target.lock",
@@ -220,48 +216,36 @@ describe("validateArgs", () => {
       help: false,
       version: false,
     };
-    const result = validateArgs(args);
-
-    expect(result.valid).toBe(true);
-    expect(result.error).toBeUndefined();
+    expect(() => validateArgs(args)).not.toThrow();
   });
 
-  it("should reject when source file is missing", () => {
+  it("should throw when source file is missing", () => {
     const args = {
       targetFile: "target.lock",
       format: "text",
       help: false,
       version: false,
     };
-    const result = validateArgs(args);
-
-    expect(result.valid).toBe(false);
-    expect(result.error).toContain("Missing required arguments");
+    expect(() => validateArgs(args)).toThrow("Missing required arguments");
   });
 
-  it("should reject when target file is missing", () => {
+  it("should throw when target file is missing", () => {
     const args = {
       sourceFile: "source.lock",
       format: "text",
       help: false,
       version: false,
     };
-    const result = validateArgs(args);
-
-    expect(result.valid).toBe(false);
-    expect(result.error).toContain("Missing required arguments");
+    expect(() => validateArgs(args)).toThrow("Missing required arguments");
   });
 
-  it("should reject when both files are missing", () => {
+  it("should throw when both files are missing", () => {
     const args = {
       format: "text",
       help: false,
       version: false,
     };
-    const result = validateArgs(args);
-
-    expect(result.valid).toBe(false);
-    expect(result.error).toContain("Missing required arguments");
+    expect(() => validateArgs(args)).toThrow("Missing required arguments");
   });
 });
 
