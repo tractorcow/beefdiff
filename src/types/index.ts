@@ -13,6 +13,7 @@ export type {
   PnpmLockfilePackage,
   ComposerLockfile,
   ComposerLockfilePackage,
+  YarnLockfileEntry,
 } from "./lockfile.js";
 
 // Diff types
