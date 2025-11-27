@@ -3,7 +3,8 @@ import type {
   ResolutionDiff,
   PackageChange,
 } from "../types/index.js";
-import { PackageChangeType, VersionChangeType } from "../types/index.js";
+import { PackageChangeType } from "../types/index.js";
+import { groupByVersionChange } from "./utils.js";
 
 export class TextReporter implements Reporter {
   report(diff: ResolutionDiff): string {
@@ -23,7 +24,7 @@ export class TextReporter implements Reporter {
   }
 
   private formatChanges(changes: PackageChange[]): string {
-    const byType = this.groupByVersionChange(changes);
+    const byType = groupByVersionChange(changes);
     const parts: string[] = [];
 
     if (byType.major.length > 0) {
@@ -44,9 +45,21 @@ export class TextReporter implements Reporter {
       parts.push("");
     }
 
-    if (byType.other.length > 0) {
-      parts.push("Other Changes:");
-      parts.push(...byType.other.map((c) => this.formatChange(c)));
+    if (byType.added.length > 0) {
+      parts.push("Added Packages:");
+      parts.push(...byType.added.map((c) => this.formatChange(c)));
+      parts.push("");
+    }
+
+    if (byType.removed.length > 0) {
+      parts.push("Removed Packages:");
+      parts.push(...byType.removed.map((c) => this.formatChange(c)));
+      parts.push("");
+    }
+
+    if (byType.downgraded.length > 0) {
+      parts.push("Downgraded Packages:");
+      parts.push(...byType.downgraded.map((c) => this.formatChange(c)));
     }
 
     return parts.join("\n");
@@ -63,37 +76,5 @@ export class TextReporter implements Reporter {
       case PackageChangeType.Downgraded:
         return `  ↓ ${change.name}: ${change.fromVersion} → ${change.toVersion} (downgraded)`;
     }
-  }
-
-  private groupByVersionChange(changes: PackageChange[]): {
-    major: PackageChange[];
-    minor: PackageChange[];
-    patch: PackageChange[];
-    other: PackageChange[];
-  } {
-    const result = {
-      major: [] as PackageChange[],
-      minor: [] as PackageChange[],
-      patch: [] as PackageChange[],
-      other: [] as PackageChange[],
-    };
-
-    for (const change of changes) {
-      if (change.type === PackageChangeType.Upgraded && change.versionChange) {
-        if (change.versionChange === VersionChangeType.Major) {
-          result.major.push(change);
-        } else if (change.versionChange === VersionChangeType.Minor) {
-          result.minor.push(change);
-        } else if (change.versionChange === VersionChangeType.Patch) {
-          result.patch.push(change);
-        }
-      } else if (change.type === PackageChangeType.Downgraded) {
-        result.other.push(change);
-      } else {
-        result.other.push(change);
-      }
-    }
-
-    return result;
   }
 }

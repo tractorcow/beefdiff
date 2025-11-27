@@ -116,6 +116,7 @@ describe("HtmlReporter", () => {
 
       const result = reporter.report(diff);
 
+      expect(result).toContain("<h2 class='added'>Added Packages</h2>");
       expect(result).toContain("<span class='added'>");
       expect(result).toContain("new-package@1.0.0");
       expect(result).toContain("(added)");
@@ -135,6 +136,7 @@ describe("HtmlReporter", () => {
 
       const result = reporter.report(diff);
 
+      expect(result).toContain("<h2 class='removed'>Removed Packages</h2>");
       expect(result).toContain("<span class='removed'>");
       expect(result).toContain("old-package@1.0.0");
       expect(result).toContain("(removed)");
@@ -184,6 +186,72 @@ describe("HtmlReporter", () => {
       expect(result).toContain("<ul>");
       expect(result).toMatch(/<li>.*package1.*<\/li>/);
       expect(result).toMatch(/<li>.*package2.*<\/li>/);
+    });
+
+    it("should format downgraded packages with HTML", () => {
+      const diff: ResolutionDiff = {
+        dependencies: [
+          {
+            name: "downgraded-package",
+            type: PackageChangeType.Downgraded,
+            versionChange: VersionChangeType.Major,
+            fromVersion: "2.0.0",
+            toVersion: "1.0.0",
+          },
+        ],
+        devDependencies: [],
+      };
+
+      const result = reporter.report(diff);
+
+      expect(result).toContain(
+        "<h2 class='downgraded'>Downgraded Packages</h2>"
+      );
+      expect(result).toContain("<span class='downgraded'>");
+      expect(result).toContain("downgraded-package");
+      expect(result).toContain("<code>2.0.0</code>");
+      expect(result).toContain("<code>1.0.0</code>");
+      expect(result).toContain("(downgraded)");
+    });
+
+    it("should show all change types in correct sections", () => {
+      const diff: ResolutionDiff = {
+        dependencies: [
+          {
+            name: "major-upgrade",
+            type: PackageChangeType.Upgraded,
+            versionChange: VersionChangeType.Major,
+            fromVersion: "1.0.0",
+            toVersion: "2.0.0",
+          },
+          {
+            name: "added-package",
+            type: PackageChangeType.Added,
+            toVersion: "1.0.0",
+          },
+          {
+            name: "removed-package",
+            type: PackageChangeType.Removed,
+            fromVersion: "1.0.0",
+          },
+          {
+            name: "downgraded-package",
+            type: PackageChangeType.Downgraded,
+            fromVersion: "2.0.0",
+            toVersion: "1.0.0",
+          },
+        ],
+        devDependencies: [],
+      };
+
+      const result = reporter.report(diff);
+
+      expect(result).toContain("<h2 class='major'>Major Updates</h2>");
+      expect(result).toContain("<h2 class='added'>Added Packages</h2>");
+      expect(result).toContain("<h2 class='removed'>Removed Packages</h2>");
+      expect(result).toContain(
+        "<h2 class='downgraded'>Downgraded Packages</h2>"
+      );
     });
 
     it("should handle empty diff", () => {

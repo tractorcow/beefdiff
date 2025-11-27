@@ -23,3 +23,12 @@ export interface ResolutionDiff {
   dependencies: PackageChange[];
   devDependencies: PackageChange[];
 }
+
+export interface GroupedChanges {
+  major: PackageChange[];
+  minor: PackageChange[];
+  patch: PackageChange[];
+  added: PackageChange[];
+  removed: PackageChange[];
+  downgraded: PackageChange[];
+}
