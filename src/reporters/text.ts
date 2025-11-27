@@ -3,6 +3,7 @@ import type {
   ResolutionDiff,
   PackageChange,
 } from "../types/index.js";
+import { PackageChangeType, VersionChangeType } from "../types/index.js";
 
 export class TextReporter implements Reporter {
   report(diff: ResolutionDiff): string {
@@ -53,12 +54,14 @@ export class TextReporter implements Reporter {
 
   private formatChange(change: PackageChange): string {
     switch (change.type) {
-      case "added":
+      case PackageChangeType.Added:
         return `  + ${change.name}@${change.toVersion}`;
-      case "removed":
+      case PackageChangeType.Removed:
         return `  - ${change.name}@${change.fromVersion}`;
-      case "upgraded":
+      case PackageChangeType.Upgraded:
         return `  ~ ${change.name}: ${change.fromVersion} → ${change.toVersion}`;
+      case PackageChangeType.Downgraded:
+        return `  ↓ ${change.name}: ${change.fromVersion} → ${change.toVersion} (downgraded)`;
     }
   }
 
@@ -76,8 +79,16 @@ export class TextReporter implements Reporter {
     };
 
     for (const change of changes) {
-      if (change.type === "upgraded" && change.versionChange) {
-        result[change.versionChange].push(change);
+      if (change.type === PackageChangeType.Upgraded && change.versionChange) {
+        if (change.versionChange === VersionChangeType.Major) {
+          result.major.push(change);
+        } else if (change.versionChange === VersionChangeType.Minor) {
+          result.minor.push(change);
+        } else if (change.versionChange === VersionChangeType.Patch) {
+          result.patch.push(change);
+        }
+      } else if (change.type === PackageChangeType.Downgraded) {
+        result.other.push(change);
       } else {
         result.other.push(change);
       }

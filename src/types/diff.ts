@@ -1,6 +1,15 @@
-export type PackageChangeType = "added" | "removed" | "upgraded";
+export enum PackageChangeType {
+  Added = "added",
+  Removed = "removed",
+  Upgraded = "upgraded",
+  Downgraded = "downgraded",
+}
 
-export type VersionChangeType = "major" | "minor" | "patch";
+export enum VersionChangeType {
+  Major = "major",
+  Minor = "minor",
+  Patch = "patch",
+}
 
 export interface PackageChange {
   name: string;

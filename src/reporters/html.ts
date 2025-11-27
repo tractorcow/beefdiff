@@ -3,6 +3,7 @@ import type {
   ResolutionDiff,
   PackageChange,
 } from "../types/index.js";
+import { PackageChangeType, VersionChangeType } from "../types/index.js";
 
 export class HtmlReporter implements Reporter {
   report(diff: ResolutionDiff): string {
@@ -78,12 +79,14 @@ export class HtmlReporter implements Reporter {
 
   private formatChange(change: PackageChange): string {
     switch (change.type) {
-      case "added":
+      case PackageChangeType.Added:
         return `<span class='added'>+ ${change.name}@${change.toVersion}</span> (added)`;
-      case "removed":
+      case PackageChangeType.Removed:
         return `<span class='removed'>- ${change.name}@${change.fromVersion}</span> (removed)`;
-      case "upgraded":
+      case PackageChangeType.Upgraded:
         return `<span class='upgraded'>${change.name}</span>: <code>${change.fromVersion}</code> → <code>${change.toVersion}</code>`;
+      case PackageChangeType.Downgraded:
+        return `<span class='downgraded'>${change.name}</span>: <code>${change.fromVersion}</code> → <code>${change.toVersion}</code> (downgraded)`;
     }
   }
 
@@ -154,8 +157,16 @@ export class HtmlReporter implements Reporter {
     };
 
     for (const change of changes) {
-      if (change.type === "upgraded" && change.versionChange) {
-        result[change.versionChange].push(change);
+      if (change.type === PackageChangeType.Upgraded && change.versionChange) {
+        if (change.versionChange === VersionChangeType.Major) {
+          result.major.push(change);
+        } else if (change.versionChange === VersionChangeType.Minor) {
+          result.minor.push(change);
+        } else if (change.versionChange === VersionChangeType.Patch) {
+          result.patch.push(change);
+        }
+      } else if (change.type === PackageChangeType.Downgraded) {
+        result.other.push(change);
       } else {
         result.other.push(change);
       }
