@@ -3,7 +3,8 @@ import type {
   ResolutionDiff,
   PackageChange,
 } from "../types/index.js";
-import { PackageChangeType, VersionChangeType } from "../types/index.js";
+import { PackageChangeType } from "../types/index.js";
+import { groupByVersionChange } from "./utils.js";
 
 export class MarkdownReporter implements Reporter {
   report(diff: ResolutionDiff): string {
@@ -23,7 +24,7 @@ export class MarkdownReporter implements Reporter {
   }
 
   private formatChanges(changes: PackageChange[]): string {
-    const byType = this.groupByVersionChange(changes);
+    const byType = groupByVersionChange(changes);
     const parts: string[] = [];
 
     if (byType.major.length > 0) {
@@ -84,43 +85,5 @@ export class MarkdownReporter implements Reporter {
       case PackageChangeType.Downgraded:
         return `**${change.name}**: \`${change.fromVersion}\` → \`${change.toVersion}\` (downgraded)`;
     }
-  }
-
-  private groupByVersionChange(changes: PackageChange[]): {
-    major: PackageChange[];
-    minor: PackageChange[];
-    patch: PackageChange[];
-    added: PackageChange[];
-    removed: PackageChange[];
-    downgraded: PackageChange[];
-  } {
-    const result = {
-      major: [] as PackageChange[],
-      minor: [] as PackageChange[],
-      patch: [] as PackageChange[],
-      added: [] as PackageChange[],
-      removed: [] as PackageChange[],
-      downgraded: [] as PackageChange[],
-    };
-
-    for (const change of changes) {
-      if (change.type === PackageChangeType.Upgraded && change.versionChange) {
-        if (change.versionChange === VersionChangeType.Major) {
-          result.major.push(change);
-        } else if (change.versionChange === VersionChangeType.Minor) {
-          result.minor.push(change);
-        } else if (change.versionChange === VersionChangeType.Patch) {
-          result.patch.push(change);
-        }
-      } else if (change.type === PackageChangeType.Downgraded) {
-        result.downgraded.push(change);
-      } else if (change.type === PackageChangeType.Added) {
-        result.added.push(change);
-      } else if (change.type === PackageChangeType.Removed) {
-        result.removed.push(change);
-      }
-    }
-
-    return result;
   }
 }

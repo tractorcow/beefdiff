@@ -17,7 +17,7 @@ export type {
 } from "./lockfile.js";
 
 // Diff types
-export type { PackageChange, ResolutionDiff } from "./diff.js";
+export type { PackageChange, ResolutionDiff, GroupedChanges } from "./diff.js";
 export { PackageChangeType, VersionChangeType } from "./diff.js";
 
 // Reporter types

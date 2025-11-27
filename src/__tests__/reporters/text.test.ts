@@ -88,6 +88,7 @@ describe("TextReporter", () => {
 
       const result = reporter.report(diff);
 
+      expect(result).toContain("Added Packages:");
       expect(result).toContain("new-package@1.0.0");
       expect(result).toContain("+");
     });
@@ -106,6 +107,7 @@ describe("TextReporter", () => {
 
       const result = reporter.report(diff);
 
+      expect(result).toContain("Removed Packages:");
       expect(result).toContain("old-package@1.0.0");
       expect(result).toContain("-");
     });
@@ -178,6 +180,68 @@ describe("TextReporter", () => {
       expect(result).toContain("DEV DEPENDENCIES");
       // Check that it doesn't contain the dependencies section heading (not just "DEPENDENCIES" which is a substring of "DEV DEPENDENCIES")
       expect(result).not.toMatch(/^DEPENDENCIES\n/m);
+    });
+
+    it("should format downgraded packages", () => {
+      const diff: ResolutionDiff = {
+        dependencies: [
+          {
+            name: "downgraded-package",
+            type: PackageChangeType.Downgraded,
+            versionChange: VersionChangeType.Major,
+            fromVersion: "2.0.0",
+            toVersion: "1.0.0",
+          },
+        ],
+        devDependencies: [],
+      };
+
+      const result = reporter.report(diff);
+
+      expect(result).toContain("Downgraded Packages:");
+      expect(result).toContain("downgraded-package");
+      expect(result).toContain("2.0.0");
+      expect(result).toContain("1.0.0");
+      expect(result).toContain("↓");
+      expect(result).toContain("(downgraded)");
+    });
+
+    it("should show all change types in correct sections", () => {
+      const diff: ResolutionDiff = {
+        dependencies: [
+          {
+            name: "major-upgrade",
+            type: PackageChangeType.Upgraded,
+            versionChange: VersionChangeType.Major,
+            fromVersion: "1.0.0",
+            toVersion: "2.0.0",
+          },
+          {
+            name: "added-package",
+            type: PackageChangeType.Added,
+            toVersion: "1.0.0",
+          },
+          {
+            name: "removed-package",
+            type: PackageChangeType.Removed,
+            fromVersion: "1.0.0",
+          },
+          {
+            name: "downgraded-package",
+            type: PackageChangeType.Downgraded,
+            fromVersion: "2.0.0",
+            toVersion: "1.0.0",
+          },
+        ],
+        devDependencies: [],
+      };
+
+      const result = reporter.report(diff);
+
+      expect(result).toContain("Major Updates:");
+      expect(result).toContain("Added Packages:");
+      expect(result).toContain("Removed Packages:");
+      expect(result).toContain("Downgraded Packages:");
     });
   });
 });
