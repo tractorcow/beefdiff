@@ -1,0 +1,6 @@
+# This is a comment
+requests==2.31.0
+# Another comment
+flask==3.0.0
+numpy==1.24.3
+# End comment

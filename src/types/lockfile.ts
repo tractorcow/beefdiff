@@ -54,3 +54,9 @@ export interface ComposerLockfile {
   packages?: ComposerLockfilePackage[];
   "packages-dev"?: ComposerLockfilePackage[];
 }
+
+export interface YarnLockfileEntry {
+  version?: string;
+  devDependency?: boolean;
+  [key: string]: unknown;
+}

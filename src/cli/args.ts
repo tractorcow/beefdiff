@@ -53,7 +53,7 @@ ARGUMENTS:
 
 OPTIONS:
     -f, --format <format>     Output format: text, html, or markdown (default: text)
-    -r, --resolver <name>     Manually specify resolver: npm, composer, or pnpm
+    -r, --resolver <name>     Manually specify resolver: npm, composer, pnpm, python, or yarn
     -o, --output <file>       Write output to file instead of stdout
     -h, --help                Show this help message
     -v, --version             Show version number
@@ -68,5 +68,7 @@ SUPPORTED LOCKFILES:
     - npm: package-lock.json
     - composer: composer.lock
     - pnpm: pnpm-lock.yaml
+    - python: requirements*.txt (e.g., requirements.txt, requirements-dev.txt)
+    - yarn: yarn.lock
 `);
 }

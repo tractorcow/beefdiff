@@ -1,6 +1,6 @@
 # @tractorcow/beefdiff
 
-Compare lockfile dependencies between two versions. Supports npm (`package-lock.json`), composer (`composer.lock`), and pnpm (`pnpm-lock.yaml`) lockfiles with detailed version change reports.
+Compare lockfile dependencies between two versions. Supports npm (`package-lock.json`), yarn (`yarn.lock`), composer (`composer.lock`), pnpm (`pnpm-lock.yaml`), and Python (`requirements*.txt`, e.g., `requirements.txt`, `requirements-dev.txt`) with detailed version change reports.
 
 ## Installation
 
@@ -23,7 +23,7 @@ beefdiff [OPTIONS] <source-lockfile> <target-lockfile>
 ### Options
 
 - `-f, --format <format>` - Output format: `text`, `html`, or `markdown` (default: `text`)
-- `-r, --resolver <name>` - Manually specify resolver: `npm`, `composer`, or `pnpm`
+- `-r, --resolver <name>` - Manually specify resolver: `npm`, `yarn`, `composer`, `pnpm`, or `python`
 - `-o, --output <file>` - Write output to file instead of stdout
 - `-h, --help` - Show help message
 - `-v, --version` - Show version number
@@ -72,6 +72,7 @@ Reports are organized by:
 Only packages with changes (added, removed, upgraded, or downgraded) are included in the report.
 
 The tool uses semantic versioning (semver) to accurately detect version changes, including:
+
 - Major, minor, and patch version changes
 - Prerelease versions (alpha, beta, rc, etc.)
 - Version downgrades (when a package version decreases)
