@@ -56,18 +56,25 @@ beefdiff --resolver npm --format markdown old.lock new.lock
 
 ### Output Formats
 
-- **text**: Plain text format suitable for terminal output
-- **html**: HTML format with color-coded version changes (red for major, orange for minor, green for patch)
-- **markdown**: Markdown format suitable for documentation or GitHub
+- **text**: Plain text format suitable for terminal output. Groups changes by version type (major, minor, patch) and other changes (added, removed, downgraded).
+- **html**: HTML format with color-coded version changes (red for major, orange for minor, green for patch). Includes styling for added (green) and removed (red) packages.
+- **markdown**: Markdown format suitable for documentation or GitHub. Organizes changes into separate sections for major updates, minor updates, patch updates, added packages, removed packages, and downgraded packages.
 
 ### Report Structure
 
 Reports are organized by:
 
 - **Dependencies** and **Dev Dependencies** (major headings)
-- **Major Updates**, **Minor Updates**, **Patch Updates**, and **Other Changes** (minor headings)
+- **Major Updates**, **Minor Updates**, **Patch Updates** (for upgraded packages)
+- **Added Packages** and **Removed Packages** (for packages added or removed)
+- **Downgraded Packages** (for packages that were downgraded)
 
-Only packages with changes (added, removed, or upgraded) are included in the report.
+Only packages with changes (added, removed, upgraded, or downgraded) are included in the report.
+
+The tool uses semantic versioning (semver) to accurately detect version changes, including:
+- Major, minor, and patch version changes
+- Prerelease versions (alpha, beta, rc, etc.)
+- Version downgrades (when a package version decreases)
 
 ## Development
 

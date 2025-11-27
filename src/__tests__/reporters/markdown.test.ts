@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from "@jest/globals";
 import { MarkdownReporter } from "../../reporters/markdown.js";
 import type { ResolutionDiff } from "../../types/index.js";
+import { PackageChangeType, VersionChangeType } from "../../types/index.js";
 
 describe("MarkdownReporter", () => {
   let reporter: MarkdownReporter;
@@ -15,8 +16,8 @@ describe("MarkdownReporter", () => {
         dependencies: [
           {
             name: "express",
-            type: "upgraded",
-            versionChange: "major",
+            type: PackageChangeType.Upgraded,
+            versionChange: VersionChangeType.Major,
             fromVersion: "4.17.0",
             toVersion: "5.0.0",
           },
@@ -24,7 +25,7 @@ describe("MarkdownReporter", () => {
         devDependencies: [
           {
             name: "jest",
-            type: "added",
+            type: PackageChangeType.Added,
             toVersion: "29.0.0",
           },
         ],
@@ -41,22 +42,22 @@ describe("MarkdownReporter", () => {
         dependencies: [
           {
             name: "package1",
-            type: "upgraded",
-            versionChange: "major",
+            type: PackageChangeType.Upgraded,
+            versionChange: VersionChangeType.Major,
             fromVersion: "1.0.0",
             toVersion: "2.0.0",
           },
           {
             name: "package2",
-            type: "upgraded",
-            versionChange: "minor",
+            type: PackageChangeType.Upgraded,
+            versionChange: VersionChangeType.Minor,
             fromVersion: "1.0.0",
             toVersion: "1.1.0",
           },
           {
             name: "package3",
-            type: "upgraded",
-            versionChange: "patch",
+            type: PackageChangeType.Upgraded,
+            versionChange: VersionChangeType.Patch,
             fromVersion: "1.0.0",
             toVersion: "1.0.1",
           },
@@ -76,7 +77,7 @@ describe("MarkdownReporter", () => {
         dependencies: [
           {
             name: "new-package",
-            type: "added",
+            type: PackageChangeType.Added,
             toVersion: "1.0.0",
           },
         ],
@@ -85,6 +86,7 @@ describe("MarkdownReporter", () => {
 
       const result = reporter.report(diff);
 
+      expect(result).toContain("### Added Packages");
       expect(result).toContain("**new-package**");
       expect(result).toContain("`1.0.0`");
       expect(result).toContain("(added)");
@@ -95,7 +97,7 @@ describe("MarkdownReporter", () => {
         dependencies: [
           {
             name: "old-package",
-            type: "removed",
+            type: PackageChangeType.Removed,
             fromVersion: "1.0.0",
           },
         ],
@@ -104,6 +106,7 @@ describe("MarkdownReporter", () => {
 
       const result = reporter.report(diff);
 
+      expect(result).toContain("### Removed Packages");
       expect(result).toContain("**old-package**");
       expect(result).toContain("`1.0.0`");
       expect(result).toContain("(removed)");
@@ -114,8 +117,8 @@ describe("MarkdownReporter", () => {
         dependencies: [
           {
             name: "upgraded-package",
-            type: "upgraded",
-            versionChange: "minor",
+            type: PackageChangeType.Upgraded,
+            versionChange: VersionChangeType.Minor,
             fromVersion: "1.0.0",
             toVersion: "1.1.0",
           },
@@ -136,12 +139,12 @@ describe("MarkdownReporter", () => {
         dependencies: [
           {
             name: "package1",
-            type: "added",
+            type: PackageChangeType.Added,
             toVersion: "1.0.0",
           },
           {
             name: "package2",
-            type: "added",
+            type: PackageChangeType.Added,
             toVersion: "2.0.0",
           },
         ],
@@ -152,6 +155,29 @@ describe("MarkdownReporter", () => {
 
       expect(result).toMatch(/^- \*\*package1\*\*/m);
       expect(result).toMatch(/^- \*\*package2\*\*/m);
+    });
+
+    it("should format downgraded packages with markdown", () => {
+      const diff: ResolutionDiff = {
+        dependencies: [
+          {
+            name: "downgraded-package",
+            type: PackageChangeType.Downgraded,
+            versionChange: VersionChangeType.Major,
+            fromVersion: "2.0.0",
+            toVersion: "1.0.0",
+          },
+        ],
+        devDependencies: [],
+      };
+
+      const result = reporter.report(diff);
+
+      expect(result).toContain("### Downgraded Packages");
+      expect(result).toContain("**downgraded-package**");
+      expect(result).toContain("`2.0.0`");
+      expect(result).toContain("`1.0.0`");
+      expect(result).toContain("(downgraded)");
     });
 
     it("should handle empty diff", () => {

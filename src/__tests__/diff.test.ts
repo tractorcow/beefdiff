@@ -1,6 +1,7 @@
 import { describe, it, expect } from "@jest/globals";
 import { diffResolutions } from "../diff.js";
 import type { Resolution } from "../types/index.js";
+import { PackageChangeType, VersionChangeType } from "../types/index.js";
 
 describe("diffResolutions", () => {
   it("should detect added packages", () => {
@@ -19,7 +20,7 @@ describe("diffResolutions", () => {
     expect(result.dependencies).toHaveLength(1);
     expect(result.dependencies[0]).toEqual({
       name: "new-package",
-      type: "added",
+      type: PackageChangeType.Added,
       toVersion: "1.0.0",
     });
   });
@@ -40,7 +41,7 @@ describe("diffResolutions", () => {
     expect(result.dependencies).toHaveLength(1);
     expect(result.dependencies[0]).toEqual({
       name: "old-package",
-      type: "removed",
+      type: PackageChangeType.Removed,
       fromVersion: "1.0.0",
     });
   });
@@ -61,8 +62,8 @@ describe("diffResolutions", () => {
     expect(result.dependencies).toHaveLength(1);
     expect(result.dependencies[0]).toEqual({
       name: "package",
-      type: "upgraded",
-      versionChange: "major",
+      type: PackageChangeType.Upgraded,
+      versionChange: VersionChangeType.Major,
       fromVersion: "1.0.0",
       toVersion: "2.0.0",
     });
@@ -84,8 +85,8 @@ describe("diffResolutions", () => {
     expect(result.dependencies).toHaveLength(1);
     expect(result.dependencies[0]).toEqual({
       name: "package",
-      type: "upgraded",
-      versionChange: "minor",
+      type: PackageChangeType.Upgraded,
+      versionChange: VersionChangeType.Minor,
       fromVersion: "1.0.0",
       toVersion: "1.1.0",
     });
@@ -107,10 +108,79 @@ describe("diffResolutions", () => {
     expect(result.dependencies).toHaveLength(1);
     expect(result.dependencies[0]).toEqual({
       name: "package",
-      type: "upgraded",
-      versionChange: "patch",
+      type: PackageChangeType.Upgraded,
+      versionChange: VersionChangeType.Patch,
       fromVersion: "1.0.0",
       toVersion: "1.0.1",
+    });
+  });
+
+  it("should detect major version downgrades", () => {
+    const source: Resolution = {
+      dependencies: [{ name: "package", version: "2.0.0" }],
+      devDependencies: [],
+    };
+
+    const target: Resolution = {
+      dependencies: [{ name: "package", version: "1.0.0" }],
+      devDependencies: [],
+    };
+
+    const result = diffResolutions(source, target);
+
+    expect(result.dependencies).toHaveLength(1);
+    expect(result.dependencies[0]).toEqual({
+      name: "package",
+      type: PackageChangeType.Downgraded,
+      versionChange: VersionChangeType.Major,
+      fromVersion: "2.0.0",
+      toVersion: "1.0.0",
+    });
+  });
+
+  it("should detect minor version downgrades", () => {
+    const source: Resolution = {
+      dependencies: [{ name: "package", version: "1.1.0" }],
+      devDependencies: [],
+    };
+
+    const target: Resolution = {
+      dependencies: [{ name: "package", version: "1.0.0" }],
+      devDependencies: [],
+    };
+
+    const result = diffResolutions(source, target);
+
+    expect(result.dependencies).toHaveLength(1);
+    expect(result.dependencies[0]).toEqual({
+      name: "package",
+      type: PackageChangeType.Downgraded,
+      versionChange: VersionChangeType.Minor,
+      fromVersion: "1.1.0",
+      toVersion: "1.0.0",
+    });
+  });
+
+  it("should detect patch version downgrades", () => {
+    const source: Resolution = {
+      dependencies: [{ name: "package", version: "1.0.1" }],
+      devDependencies: [],
+    };
+
+    const target: Resolution = {
+      dependencies: [{ name: "package", version: "1.0.0" }],
+      devDependencies: [],
+    };
+
+    const result = diffResolutions(source, target);
+
+    expect(result.dependencies).toHaveLength(1);
+    expect(result.dependencies[0]).toEqual({
+      name: "package",
+      type: PackageChangeType.Downgraded,
+      versionChange: VersionChangeType.Patch,
+      fromVersion: "1.0.1",
+      toVersion: "1.0.0",
     });
   });
 
@@ -144,9 +214,11 @@ describe("diffResolutions", () => {
     const result = diffResolutions(source, target);
 
     expect(result.dependencies).toHaveLength(1);
-    expect(result.dependencies[0].versionChange).toBe("major");
+    expect(result.dependencies[0].versionChange).toBe(VersionChangeType.Major);
     expect(result.devDependencies).toHaveLength(1);
-    expect(result.devDependencies[0].versionChange).toBe("minor");
+    expect(result.devDependencies[0].versionChange).toBe(
+      VersionChangeType.Minor
+    );
   });
 
   it("should handle multiple changes", () => {
@@ -172,16 +244,16 @@ describe("diffResolutions", () => {
 
     expect(result.dependencies).toHaveLength(4);
     expect(result.dependencies.find((c) => c.name === "package1")?.type).toBe(
-      "upgraded"
+      PackageChangeType.Upgraded
     );
     expect(result.dependencies.find((c) => c.name === "package2")?.type).toBe(
-      "upgraded"
+      PackageChangeType.Upgraded
     );
     expect(result.dependencies.find((c) => c.name === "package3")?.type).toBe(
-      "removed"
+      PackageChangeType.Removed
     );
     expect(result.dependencies.find((c) => c.name === "package4")?.type).toBe(
-      "added"
+      PackageChangeType.Added
     );
   });
 
@@ -201,6 +273,96 @@ describe("diffResolutions", () => {
     // When semver parsing fails, getVersionChangeType returns null,
     // and the change is not added to the results
     expect(result.dependencies).toHaveLength(0);
+  });
+
+  it("should handle prerelease versions (beta to stable)", () => {
+    const source: Resolution = {
+      dependencies: [{ name: "package", version: "1.0.0-beta.1" }],
+      devDependencies: [],
+    };
+
+    const target: Resolution = {
+      dependencies: [{ name: "package", version: "1.0.0" }],
+      devDependencies: [],
+    };
+
+    const result = diffResolutions(source, target);
+
+    expect(result.dependencies).toHaveLength(1);
+    expect(result.dependencies[0].type).toBe(PackageChangeType.Upgraded);
+    expect(result.dependencies[0].versionChange).toBe(VersionChangeType.Patch);
+  });
+
+  it("should handle prerelease versions (alpha to beta)", () => {
+    const source: Resolution = {
+      dependencies: [{ name: "package", version: "1.0.0-alpha.1" }],
+      devDependencies: [],
+    };
+
+    const target: Resolution = {
+      dependencies: [{ name: "package", version: "1.0.0-beta.1" }],
+      devDependencies: [],
+    };
+
+    const result = diffResolutions(source, target);
+
+    expect(result.dependencies).toHaveLength(1);
+    expect(result.dependencies[0].type).toBe(PackageChangeType.Upgraded);
+    expect(result.dependencies[0].versionChange).toBe(VersionChangeType.Patch);
+  });
+
+  it("should handle prerelease versions across minor boundary", () => {
+    const source: Resolution = {
+      dependencies: [{ name: "package", version: "1.0.0-beta.1" }],
+      devDependencies: [],
+    };
+
+    const target: Resolution = {
+      dependencies: [{ name: "package", version: "1.1.0" }],
+      devDependencies: [],
+    };
+
+    const result = diffResolutions(source, target);
+
+    expect(result.dependencies).toHaveLength(1);
+    expect(result.dependencies[0].type).toBe(PackageChangeType.Upgraded);
+    expect(result.dependencies[0].versionChange).toBe(VersionChangeType.Minor);
+  });
+
+  it("should handle prerelease versions across major boundary", () => {
+    const source: Resolution = {
+      dependencies: [{ name: "package", version: "1.0.0-beta.1" }],
+      devDependencies: [],
+    };
+
+    const target: Resolution = {
+      dependencies: [{ name: "package", version: "2.0.0" }],
+      devDependencies: [],
+    };
+
+    const result = diffResolutions(source, target);
+
+    expect(result.dependencies).toHaveLength(1);
+    expect(result.dependencies[0].type).toBe(PackageChangeType.Upgraded);
+    expect(result.dependencies[0].versionChange).toBe(VersionChangeType.Major);
+  });
+
+  it("should handle downgrade from stable to prerelease", () => {
+    const source: Resolution = {
+      dependencies: [{ name: "package", version: "1.0.0" }],
+      devDependencies: [],
+    };
+
+    const target: Resolution = {
+      dependencies: [{ name: "package", version: "1.0.0-beta.1" }],
+      devDependencies: [],
+    };
+
+    const result = diffResolutions(source, target);
+
+    expect(result.dependencies).toHaveLength(1);
+    expect(result.dependencies[0].type).toBe(PackageChangeType.Downgraded);
+    expect(result.dependencies[0].versionChange).toBe(VersionChangeType.Patch);
   });
 
   it("should handle empty resolutions", () => {

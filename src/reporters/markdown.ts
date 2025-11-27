@@ -3,6 +3,7 @@ import type {
   ResolutionDiff,
   PackageChange,
 } from "../types/index.js";
+import { PackageChangeType, VersionChangeType } from "../types/index.js";
 
 export class MarkdownReporter implements Reporter {
   report(diff: ResolutionDiff): string {
@@ -43,9 +44,21 @@ export class MarkdownReporter implements Reporter {
       parts.push("");
     }
 
-    if (byType.other.length > 0) {
-      parts.push("### Other Changes");
-      parts.push(this.formatChangeList(byType.other));
+    if (byType.added.length > 0) {
+      parts.push("### Added Packages");
+      parts.push(this.formatChangeList(byType.added));
+      parts.push("");
+    }
+
+    if (byType.removed.length > 0) {
+      parts.push("### Removed Packages");
+      parts.push(this.formatChangeList(byType.removed));
+      parts.push("");
+    }
+
+    if (byType.downgraded.length > 0) {
+      parts.push("### Downgraded Packages");
+      parts.push(this.formatChangeList(byType.downgraded));
     }
 
     return parts.join("\n");
@@ -62,12 +75,14 @@ export class MarkdownReporter implements Reporter {
 
   private formatChange(change: PackageChange): string {
     switch (change.type) {
-      case "added":
+      case PackageChangeType.Added:
         return `**${change.name}**@\`${change.toVersion}\` (added)`;
-      case "removed":
+      case PackageChangeType.Removed:
         return `**${change.name}**@\`${change.fromVersion}\` (removed)`;
-      case "upgraded":
+      case PackageChangeType.Upgraded:
         return `**${change.name}**: \`${change.fromVersion}\` → \`${change.toVersion}\``;
+      case PackageChangeType.Downgraded:
+        return `**${change.name}**: \`${change.fromVersion}\` → \`${change.toVersion}\` (downgraded)`;
     }
   }
 
@@ -75,20 +90,34 @@ export class MarkdownReporter implements Reporter {
     major: PackageChange[];
     minor: PackageChange[];
     patch: PackageChange[];
-    other: PackageChange[];
+    added: PackageChange[];
+    removed: PackageChange[];
+    downgraded: PackageChange[];
   } {
     const result = {
       major: [] as PackageChange[],
       minor: [] as PackageChange[],
       patch: [] as PackageChange[],
-      other: [] as PackageChange[],
+      added: [] as PackageChange[],
+      removed: [] as PackageChange[],
+      downgraded: [] as PackageChange[],
     };
 
     for (const change of changes) {
-      if (change.type === "upgraded" && change.versionChange) {
-        result[change.versionChange].push(change);
-      } else {
-        result.other.push(change);
+      if (change.type === PackageChangeType.Upgraded && change.versionChange) {
+        if (change.versionChange === VersionChangeType.Major) {
+          result.major.push(change);
+        } else if (change.versionChange === VersionChangeType.Minor) {
+          result.minor.push(change);
+        } else if (change.versionChange === VersionChangeType.Patch) {
+          result.patch.push(change);
+        }
+      } else if (change.type === PackageChangeType.Downgraded) {
+        result.downgraded.push(change);
+      } else if (change.type === PackageChangeType.Added) {
+        result.added.push(change);
+      } else if (change.type === PackageChangeType.Removed) {
+        result.removed.push(change);
       }
     }
 

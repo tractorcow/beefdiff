@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from "@jest/globals";
 import { TextReporter } from "../../reporters/text.js";
 import type { ResolutionDiff } from "../../types/index.js";
+import { PackageChangeType, VersionChangeType } from "../../types/index.js";
 
 describe("TextReporter", () => {
   let reporter: TextReporter;
@@ -15,8 +16,8 @@ describe("TextReporter", () => {
         dependencies: [
           {
             name: "express",
-            type: "upgraded",
-            versionChange: "major",
+            type: PackageChangeType.Upgraded,
+            versionChange: VersionChangeType.Major,
             fromVersion: "4.17.0",
             toVersion: "5.0.0",
           },
@@ -24,7 +25,7 @@ describe("TextReporter", () => {
         devDependencies: [
           {
             name: "jest",
-            type: "added",
+            type: PackageChangeType.Added,
             toVersion: "29.0.0",
           },
         ],
@@ -43,22 +44,22 @@ describe("TextReporter", () => {
         dependencies: [
           {
             name: "package1",
-            type: "upgraded",
-            versionChange: "major",
+            type: PackageChangeType.Upgraded,
+            versionChange: VersionChangeType.Major,
             fromVersion: "1.0.0",
             toVersion: "2.0.0",
           },
           {
             name: "package2",
-            type: "upgraded",
-            versionChange: "minor",
+            type: PackageChangeType.Upgraded,
+            versionChange: VersionChangeType.Minor,
             fromVersion: "1.0.0",
             toVersion: "1.1.0",
           },
           {
             name: "package3",
-            type: "upgraded",
-            versionChange: "patch",
+            type: PackageChangeType.Upgraded,
+            versionChange: VersionChangeType.Patch,
             fromVersion: "1.0.0",
             toVersion: "1.0.1",
           },
@@ -78,7 +79,7 @@ describe("TextReporter", () => {
         dependencies: [
           {
             name: "new-package",
-            type: "added",
+            type: PackageChangeType.Added,
             toVersion: "1.0.0",
           },
         ],
@@ -96,7 +97,7 @@ describe("TextReporter", () => {
         dependencies: [
           {
             name: "old-package",
-            type: "removed",
+            type: PackageChangeType.Removed,
             fromVersion: "1.0.0",
           },
         ],
@@ -114,8 +115,8 @@ describe("TextReporter", () => {
         dependencies: [
           {
             name: "upgraded-package",
-            type: "upgraded",
-            versionChange: "minor",
+            type: PackageChangeType.Upgraded,
+            versionChange: VersionChangeType.Minor,
             fromVersion: "1.0.0",
             toVersion: "1.1.0",
           },
@@ -147,7 +148,7 @@ describe("TextReporter", () => {
         dependencies: [
           {
             name: "package",
-            type: "added",
+            type: PackageChangeType.Added,
             toVersion: "1.0.0",
           },
         ],
@@ -166,7 +167,7 @@ describe("TextReporter", () => {
         devDependencies: [
           {
             name: "dev-package",
-            type: "added",
+            type: PackageChangeType.Added,
             toVersion: "1.0.0",
           },
         ],
