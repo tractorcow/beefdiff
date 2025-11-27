@@ -1,12 +1,4 @@
-export interface CliArgs {
-  sourceFile?: string;
-  targetFile?: string;
-  format: string;
-  resolverName?: string;
-  outputFile?: string;
-  help: boolean;
-  version: boolean;
-}
+import type { CliArgs } from "../types/index.js";
 
 export function parseArgs(argv: string[]): CliArgs {
   const args: CliArgs = {
@@ -37,23 +29,16 @@ export function parseArgs(argv: string[]): CliArgs {
   return args;
 }
 
-export function validateArgs(args: CliArgs): {
-  valid: boolean;
-  error?: string;
-} {
+export function validateArgs(args: CliArgs): void {
   if (args.help || args.version) {
-    return { valid: true };
+    return;
   }
 
   if (!args.sourceFile || !args.targetFile) {
-    return {
-      valid: false,
-      error:
-        "Missing required arguments: source-lockfile and target-lockfile are required",
-    };
+    throw new Error(
+      "Missing required arguments: source-lockfile and target-lockfile are required"
+    );
   }
-
-  return { valid: true };
 }
 
 export function showHelp(): void {
