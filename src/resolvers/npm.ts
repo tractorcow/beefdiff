@@ -175,7 +175,7 @@ export class NpmResolver implements Resolver {
 
   private parseLockfile(content: string): NpmLockfile {
     try {
-      return parseJson(content) as NpmLockfile;
+      return parseJson(content) as unknown as NpmLockfile;
     } catch (error) {
       throw new Error(
         `Failed to parse package-lock.json: ${error instanceof Error ? error.message : String(error)}`
