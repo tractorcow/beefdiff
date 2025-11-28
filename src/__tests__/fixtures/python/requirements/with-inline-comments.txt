@@ -1,0 +1,5 @@
+requests==2.31.0  # HTTP library
+flask==3.0.0  # Web framework
+numpy==1.24.3  # Scientific computing
+# This is a full comment line
+package==1.0.0#no space comment

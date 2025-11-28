@@ -1,0 +1,3 @@
+requests==2.31.0
+-r other-requirements.txt
+flask==3.0.0

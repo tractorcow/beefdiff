@@ -22,4 +22,12 @@ export default {
   collectCoverageFrom: ["src/**/*.ts", "!src/**/*.d.ts", "!src/bin.ts"],
   transformIgnorePatterns: [],
   setupFilesAfterEnv: [],
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 95,
+      lines: 90,
+      statements: 90,
+    },
+  },
 };

@@ -15,7 +15,14 @@ export class YarnResolver implements Resolver {
 
   async resolve(filePath: string): Promise<Resolution> {
     const content = await readFile(filePath, "utf-8");
-    const parsed = lockfile.parse(content);
+    let parsed;
+    try {
+      parsed = lockfile.parse(content);
+    } catch (error) {
+      throw new Error(
+        `Failed to parse yarn.lock file: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
 
     if (parsed.type !== "success") {
       throw new Error("Failed to parse yarn.lock file");

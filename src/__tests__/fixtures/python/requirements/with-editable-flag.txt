@@ -1,0 +1,4 @@
+requests==2.31.0
+-e git+https://github.com/user/repo.git
+flask==3.0.0
+--editable ./local-package

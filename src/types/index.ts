@@ -14,7 +14,14 @@ export type {
   ComposerLockfile,
   ComposerLockfilePackage,
   YarnLockfileEntry,
+  PipfileLock,
+  PipfileLockPackage,
+  PoetryLock,
+  PoetryLockPackage,
+  PdmLock,
+  PdmLockPackage,
 } from "./lockfile.js";
+export { PythonLockfileFormat } from "./lockfile.js";
 
 // Diff types
 export type { PackageChange, ResolutionDiff, GroupedChanges } from "./diff.js";

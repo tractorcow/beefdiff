@@ -1,0 +1,4 @@
+requests==2.31.0
+package>=invalid
+package2~=not-a-version
+flask==3.0.0

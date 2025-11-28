@@ -1,0 +1,4 @@
+requests==2.31.0
+package @ https://example.com/package.tar.gz
+flask==3.0.0
+package2 @ git+https://github.com/user/repo.git@v1.0.0
