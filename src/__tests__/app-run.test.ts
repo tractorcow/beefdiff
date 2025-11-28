@@ -321,19 +321,16 @@ describe("run", () => {
   });
 
   it("should detect resolver from file extension when not specified", async () => {
-    // Create files with proper names that resolvers can detect
+    // Use files with proper names that resolvers can detect
+    // Copy fixtures to tempDir with correct names
     const sourceFile = join(tempDir, "pnpm-lock.yaml");
     const targetFile = join(tempDir, "pnpm-lock-new.yaml");
     const sourceContent = await readFile(
       join(fixturesDir, "pnpm", "basic.yaml"),
       "utf-8"
     );
-    const targetContent = await readFile(
-      join(fixturesDir, "pnpm", "basic.yaml"),
-      "utf-8"
-    );
     await writeFile(sourceFile, sourceContent);
-    await writeFile(targetFile, targetContent);
+    await writeFile(targetFile, sourceContent);
     process.argv = ["node", "beefdiff", sourceFile, targetFile];
 
     const exitCode = await run();
@@ -422,11 +419,11 @@ describe("run", () => {
   });
 
   it("should throw error when no resolver can be found for files", async () => {
-    // Create temporary files that don't match any resolver
-    const sourceFile = join(tempDir, "unknown.lock");
+    const sourceFile = join(fixturesDir, "unknown.lock");
     const targetFile = join(tempDir, "unknown2.lock");
-    await writeFile(sourceFile, "test content");
-    await writeFile(targetFile, "test content");
+    // Copy the fixture to tempDir for the second file (needs to be in tempDir for cleanup)
+    const content = await readFile(sourceFile, "utf-8");
+    await writeFile(targetFile, content);
     process.argv = ["node", "beefdiff", sourceFile, targetFile];
 
     await expect(run()).rejects.toThrow("No resolver found");

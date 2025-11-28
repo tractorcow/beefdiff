@@ -155,44 +155,19 @@ describe("PythonResolver", () => {
     });
 
     it("should throw error for valid JSON that is not a Python lockfile", async () => {
-      // Create a temporary file with valid JSON but not a Python lockfile format
-      const { writeFile, rm } = await import("fs/promises");
-      const { mkdtemp } = await import("fs/promises");
-      const tmpDir = await mkdtemp(join(__dirname, "..", "tmp-"));
-      const tmpFile = join(tmpDir, "not-python.json");
+      const fixturePath = join(fixturesDir, "not-python.json");
 
-      try {
-        await writeFile(
-          tmpFile,
-          JSON.stringify({ some: "valid", json: "but not python lockfile" })
-        );
-
-        await expect(resolver.resolve(tmpFile)).rejects.toThrow(
-          "File is valid JSON but does not match any known Python lockfile format"
-        );
-      } finally {
-        // Clean up the entire temporary directory
-        await rm(tmpDir, { recursive: true, force: true });
-      }
+      await expect(resolver.resolve(fixturePath)).rejects.toThrow(
+        "File is valid JSON but does not match any known Python lockfile format"
+      );
     });
 
     it("should throw error for valid TOML that is not poetry.lock", async () => {
-      // Create a temporary file with valid TOML but not poetry.lock format
-      const { writeFile, rm } = await import("fs/promises");
-      const { mkdtemp } = await import("fs/promises");
-      const tmpDir = await mkdtemp(join(__dirname, "..", "tmp-"));
-      const tmpFile = join(tmpDir, "not-poetry.toml");
+      const fixturePath = join(fixturesDir, "not-poetry.toml");
 
-      try {
-        await writeFile(tmpFile, "[package]\nname = 'test'\nversion = '1.0.0'");
-
-        await expect(resolver.resolve(tmpFile)).rejects.toThrow(
-          "File is valid TOML but does not match poetry.lock format"
-        );
-      } finally {
-        // Clean up the entire temporary directory
-        await rm(tmpDir, { recursive: true, force: true });
-      }
+      await expect(resolver.resolve(fixturePath)).rejects.toThrow(
+        "File is valid TOML but does not match poetry.lock format"
+      );
     });
   });
 });

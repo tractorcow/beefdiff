@@ -68,57 +68,15 @@ describe("RubyGemfileResolver", () => {
     });
 
     it("should handle empty Gemfile.lock", async () => {
-      // Create a minimal valid Gemfile.lock
-      const { writeFile, mkdtemp, rm } = await import("fs/promises");
-      const { join: pathJoin } = await import("path");
-      const { tmpdir } = await import("os");
-
-      const tmpDir = await mkdtemp(pathJoin(tmpdir(), "beefdiff-test-"));
-      const emptyLock = pathJoin(tmpDir, "Gemfile.lock");
-
-      try {
-        await writeFile(
-          emptyLock,
-          `GEM
-  remote: https://rubygems.org/
-  specs:
-
-PLATFORMS
-  ruby
-
-DEPENDENCIES
-
-BUNDLED WITH
-   2.2.16
-`
-        );
-
-        const result = await resolver.resolve(emptyLock);
-        expect(result.dependencies).toHaveLength(0);
-        expect(result.devDependencies).toHaveLength(0);
-      } finally {
-        await rm(tmpDir, { recursive: true, force: true });
-      }
+      const result = await resolver.resolve(join(fixturesDir, "empty.lock"));
+      expect(result.dependencies).toHaveLength(0);
+      expect(result.devDependencies).toHaveLength(0);
     });
 
-    it("should throw error for invalid Gemfile.lock", async () => {
-      const { writeFile, mkdtemp, rm } = await import("fs/promises");
-      const { join: pathJoin } = await import("path");
-      const { tmpdir } = await import("os");
-
-      const tmpDir = await mkdtemp(pathJoin(tmpdir(), "beefdiff-test-"));
-      const invalidLock = pathJoin(tmpDir, "Gemfile.lock");
-
-      try {
-        await writeFile(invalidLock, "not a valid lockfile");
-
-        await expect(resolver.resolve(invalidLock)).resolves.toEqual({
-          dependencies: [],
-          devDependencies: [],
-        });
-      } finally {
-        await rm(tmpDir, { recursive: true, force: true });
-      }
+    it("should handle invalid Gemfile.lock gracefully", async () => {
+      const result = await resolver.resolve(join(fixturesDir, "invalid.lock"));
+      expect(result.dependencies).toHaveLength(0);
+      expect(result.devDependencies).toHaveLength(0);
     });
   });
 });
