@@ -48,7 +48,7 @@ beefdiff [OPTIONS] <source-lockfile> <target-lockfile>
 ### Options
 
 - `-f, --format <format>` - Output format: `text`, `html`, or `markdown` (default: `text`)
-- `-r, --resolver <name>` - Manually specify resolver: `npm`, `yarn`, `composer`, `pnpm`, or `python`
+- `-r, --resolver <name>` - Manually specify resolver: `npm`, `yarn`, `composer`, `pnpm`, `python`, or `ruby`
 - `-o, --output <file>` - Write output to file instead of stdout
 - `-h, --help` - Show help message
 - `-v, --version` - Show version number
@@ -101,6 +101,19 @@ The tool uses semantic versioning (semver) to accurately detect version changes,
 - Major, minor, and patch version changes
 - Prerelease versions (alpha, beta, rc, etc.)
 - Version downgrades (when a package version decreases)
+
+## GitHub Action
+
+This repository includes a reusable GitHub Action that automatically posts lockfile diffs as comments on pull requests. See [`action/README.md`](action/README.md) for details.
+
+**Quick start:**
+
+```yaml
+- name: Package lock diff
+  uses: tractorcow/beefdiff/action@master
+```
+
+The action supports npm, yarn, pnpm, composer, Python, and Ruby lockfiles, and can be configured with custom filenames, resolvers, and output formats.
 
 ## Development
 

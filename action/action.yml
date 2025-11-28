@@ -1,0 +1,87 @@
+name: Package lock diff
+description: Show package lock diff in comment using beefdiff
+
+inputs:
+  work-dir:
+    description: 'Directory to run the diff in'
+    required: false
+    default: ''
+  node_version:
+    description: 'Node version to setup. Can set to blank string to disable node setup'
+    required: false
+    default: '24'
+  filename:
+    description: 'Lockfile filename to diff (e.g., package-lock.json, yarn.lock, pnpm-lock.yaml)'
+    required: false
+    default: 'package-lock.json'
+  resolver:
+    description: 'Resolver to use (npm, yarn, pnpm, composer, python, ruby)'
+    required: false
+    default: 'npm'
+  format:
+    description: 'Output format (text, html, markdown)'
+    required: false
+    default: 'markdown'
+  github_token:
+    description: 'GitHub token for API calls (defaults to github.token if not provided)'
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      if: ${{ inputs.node_version != '' }}
+      with:
+        node-version: ${{ inputs.node_version }}
+
+    - name: Checkout
+      uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+
+    - name: Install beefdiff
+      shell: bash
+      run: npm install -g @tractorcow/beefdiff
+
+    - name: Prepare package lock diff
+      shell: bash
+      run: |
+        OLD_FILE="lockfile.old"
+        NEW_FILE="${{ inputs.filename }}"
+
+        if [ -z "${{ inputs.work-dir }}" ]; then
+          git show ${{ github.event.pull_request.base.sha }}:${{ inputs.filename }} > "$OLD_FILE"
+          beefdiff "$OLD_FILE" "$NEW_FILE" --resolver=${{ inputs.resolver }} --format=${{ inputs.format }} > package_diff_raw.md || true
+        else
+          git show ${{ github.event.pull_request.base.sha }}:${{ inputs.work-dir }}/${{ inputs.filename }} > "$OLD_FILE"
+          beefdiff "$OLD_FILE" "${{ inputs.work-dir }}/$NEW_FILE" --resolver=${{ inputs.resolver }} --format=${{ inputs.format }} > package_diff_raw.md || true
+        fi
+
+        if [[ -s package_diff_raw.md ]]; then
+          echo "<!-- beefdiff-package-lock-diff -->" > package_diff.md
+          echo "# Package lock diff" >> package_diff.md
+          echo "" >> package_diff.md
+          cat package_diff_raw.md >> package_diff.md
+        fi
+
+    - name: Find existing comment
+      if: always() && hashFiles('package_diff.md') != ''
+      id: find-comment
+      uses: peter-evans/find-comment@v2
+      with:
+        token: ${{ inputs.github_token != '' && inputs.github_token || github.token }}
+        issue-number: ${{ github.event.pull_request.number }}
+        comment-author: 'github-actions[bot]'
+        body-includes: '<!-- beefdiff-package-lock-diff -->'
+
+    - name: Create or update PR comment
+      if: always() && hashFiles('package_diff.md') != ''
+      uses: peter-evans/create-or-update-comment@v5
+      with:
+        token: ${{ inputs.github_token != '' && inputs.github_token || github.token }}
+        issue-number: ${{ github.event.pull_request.number }}
+        comment-id: ${{ steps.find-comment.outputs.comment-id }}
+        edit-mode: replace
+        body-path: package_diff.md
