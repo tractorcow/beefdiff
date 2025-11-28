@@ -1,6 +1,6 @@
 {
   "name": "@tractorcow/beefdiff",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "type": "module",
   "description": "Compare lockfile dependencies between two versions. Supports npm, composer, and pnpm lockfiles with detailed version change reports.",
   "bin": {
