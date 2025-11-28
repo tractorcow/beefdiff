@@ -21,6 +21,10 @@ Compare lockfile dependencies between two versions. Supports multiple package ma
 
 - **Composer**: `composer.lock`
 
+### Ruby Ecosystem
+
+- **Bundler**: `Gemfile.lock`
+
 All Python lockfile formats are automatically detected based on file content, so the tool works even with non-standard filenames.
 
 ## Installation
