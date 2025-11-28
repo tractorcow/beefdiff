@@ -50,15 +50,42 @@ runs:
       run: |
         OLD_FILE="lockfile.old"
         NEW_FILE="${{ inputs.filename }}"
+        OLD_FILE_PATH=""
+        NEW_FILE_PATH=""
 
+        # Determine file paths
         if [ -z "${{ inputs.work-dir }}" ]; then
-          git show ${{ github.event.pull_request.base.sha }}:${{ inputs.filename }} > "$OLD_FILE"
-          beefdiff "$OLD_FILE" "$NEW_FILE" --resolver=${{ inputs.resolver }} --format=${{ inputs.format }} > package_diff_raw.md || true
+          OLD_FILE_PATH="${{ inputs.filename }}"
+          NEW_FILE_PATH="${{ inputs.filename }}"
         else
-          git show ${{ github.event.pull_request.base.sha }}:${{ inputs.work-dir }}/${{ inputs.filename }} > "$OLD_FILE"
-          beefdiff "$OLD_FILE" "${{ inputs.work-dir }}/$NEW_FILE" --resolver=${{ inputs.resolver }} --format=${{ inputs.format }} > package_diff_raw.md || true
+          OLD_FILE_PATH="${{ inputs.work-dir }}/${{ inputs.filename }}"
+          NEW_FILE_PATH="${{ inputs.work-dir }}/${{ inputs.filename }}"
         fi
 
+        # Extract old file from base branch if it exists
+        if git show ${{ github.event.pull_request.base.sha }}:"$OLD_FILE_PATH" > "$OLD_FILE" 2>/dev/null; then
+          OLD_EXISTS=true
+        else
+          OLD_EXISTS=false
+          rm -f "$OLD_FILE"
+        fi
+
+        # Check if new file exists
+        if [ -f "$NEW_FILE_PATH" ]; then
+          NEW_EXISTS=true
+        else
+          NEW_EXISTS=false
+        fi
+
+        # Generate diff only if both files exist
+        if [ "$OLD_EXISTS" = true ] && [ "$NEW_EXISTS" = true ]; then
+          beefdiff "$OLD_FILE" "$NEW_FILE_PATH" --resolver=${{ inputs.resolver }} --format=${{ inputs.format }} > package_diff_raw.md 2>/dev/null || true
+        else
+          # Skip diff if either file is missing
+          touch package_diff_raw.md
+        fi
+
+        # Create final diff file if we have content
         if [[ -s package_diff_raw.md ]]; then
           echo "<!-- beefdiff-package-lock-diff -->" > package_diff.md
           echo "# Package lock diff" >> package_diff.md
