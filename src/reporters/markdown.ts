@@ -29,61 +29,71 @@ export class MarkdownReporter implements Reporter {
 
     if (byType.major.length > 0) {
       parts.push("### Major Updates");
-      parts.push(this.formatChangeList(byType.major));
+      parts.push(this.formatChangeTable(byType.major));
       parts.push("");
     }
 
     if (byType.minor.length > 0) {
       parts.push("### Minor Updates");
-      parts.push(this.formatChangeList(byType.minor));
+      parts.push(this.formatChangeTable(byType.minor));
       parts.push("");
     }
 
     if (byType.patch.length > 0) {
       parts.push("### Patch Updates");
-      parts.push(this.formatChangeList(byType.patch));
+      parts.push(this.formatChangeTable(byType.patch));
       parts.push("");
     }
 
     if (byType.added.length > 0) {
       parts.push("### Added Packages");
-      parts.push(this.formatChangeList(byType.added));
+      parts.push(this.formatChangeTable(byType.added));
       parts.push("");
     }
 
     if (byType.removed.length > 0) {
       parts.push("### Removed Packages");
-      parts.push(this.formatChangeList(byType.removed));
+      parts.push(this.formatChangeTable(byType.removed));
       parts.push("");
     }
 
     if (byType.downgraded.length > 0) {
       parts.push("### Downgraded Packages");
-      parts.push(this.formatChangeList(byType.downgraded));
+      parts.push(this.formatChangeTable(byType.downgraded));
     }
 
     return parts.join("\n");
   }
 
-  private formatChangeList(changes: PackageChange[]): string {
+  private formatChangeTable(changes: PackageChange[]): string {
     if (changes.length === 0) {
       return "";
     }
 
-    const items = changes.map((c) => `- ${this.formatChange(c)}`);
-    return items.join("\n");
-  }
+    // Table with Package, From Version, To Version columns for all change types
+    const rows = [
+      "| Package | From Version | To Version |",
+      "|---------|--------------|------------|",
+    ];
 
-  private formatChange(change: PackageChange): string {
-    switch (change.type) {
-      case PackageChangeType.Added:
-        return `**${change.name}**@\`${change.toVersion}\` (added)`;
-      case PackageChangeType.Removed:
-        return `**${change.name}**@\`${change.fromVersion}\` (removed)`;
-      case PackageChangeType.Upgraded:
-        return `**${change.name}**: \`${change.fromVersion}\` → \`${change.toVersion}\``;
-      case PackageChangeType.Downgraded:
-        return `**${change.name}**: \`${change.fromVersion}\` → \`${change.toVersion}\` (downgraded)`;
+    for (const change of changes) {
+      if (change.type === PackageChangeType.Upgraded) {
+        rows.push(
+          `| **${change.name}** | \`${change.fromVersion}\` | \`${change.toVersion}\` |`
+        );
+      } else if (change.type === PackageChangeType.Downgraded) {
+        rows.push(
+          `| **${change.name}** ⬇️ | \`${change.fromVersion}\` | \`${change.toVersion}\` |`
+        );
+      } else if (change.type === PackageChangeType.Added) {
+        rows.push(`| **${change.name}** ➕ | N/A | \`${change.toVersion}\` |`);
+      } else if (change.type === PackageChangeType.Removed) {
+        rows.push(
+          `| **${change.name}** ➖ | \`${change.fromVersion}\` | N/A |`
+        );
+      }
     }
+
+    return rows.join("\n");
   }
 }

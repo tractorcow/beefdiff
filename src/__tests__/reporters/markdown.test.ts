@@ -72,7 +72,7 @@ describe("MarkdownReporter", () => {
       expect(result).toContain("### Patch Updates");
     });
 
-    it("should format added packages with markdown", () => {
+    it("should format added packages with markdown table", () => {
       const diff: ResolutionDiff = {
         dependencies: [
           {
@@ -87,12 +87,13 @@ describe("MarkdownReporter", () => {
       const result = reporter.report(diff);
 
       expect(result).toContain("### Added Packages");
-      expect(result).toContain("**new-package**");
-      expect(result).toContain("`1.0.0`");
-      expect(result).toContain("(added)");
+      expect(result).toContain("| Package | From Version | To Version |");
+      expect(result).toContain("| **new-package** ➕ |");
+      expect(result).toContain("| N/A |");
+      expect(result).toContain("| `1.0.0` |");
     });
 
-    it("should format removed packages with markdown", () => {
+    it("should format removed packages with markdown table", () => {
       const diff: ResolutionDiff = {
         dependencies: [
           {
@@ -107,12 +108,13 @@ describe("MarkdownReporter", () => {
       const result = reporter.report(diff);
 
       expect(result).toContain("### Removed Packages");
-      expect(result).toContain("**old-package**");
-      expect(result).toContain("`1.0.0`");
-      expect(result).toContain("(removed)");
+      expect(result).toContain("| Package | From Version | To Version |");
+      expect(result).toContain("| **old-package** ➖ |");
+      expect(result).toContain("| `1.0.0` |");
+      expect(result).toContain("| N/A |");
     });
 
-    it("should format upgraded packages with markdown", () => {
+    it("should format upgraded packages with markdown table", () => {
       const diff: ResolutionDiff = {
         dependencies: [
           {
@@ -128,13 +130,13 @@ describe("MarkdownReporter", () => {
 
       const result = reporter.report(diff);
 
-      expect(result).toContain("**upgraded-package**");
-      expect(result).toContain("`1.0.0`");
-      expect(result).toContain("`1.1.0`");
-      expect(result).toContain("→");
+      expect(result).toContain("| Package | From Version | To Version |");
+      expect(result).toContain("| **upgraded-package** |");
+      expect(result).toContain("| `1.0.0` |");
+      expect(result).toContain("| `1.1.0` |");
     });
 
-    it("should use list format for changes", () => {
+    it("should use table format for changes", () => {
       const diff: ResolutionDiff = {
         dependencies: [
           {
@@ -153,11 +155,13 @@ describe("MarkdownReporter", () => {
 
       const result = reporter.report(diff);
 
-      expect(result).toMatch(/^- \*\*package1\*\*/m);
-      expect(result).toMatch(/^- \*\*package2\*\*/m);
+      expect(result).toContain("| Package | From Version | To Version |");
+      expect(result).toContain("| **package1** ➕ |");
+      expect(result).toContain("| **package2** ➕ |");
+      expect(result).toContain("| N/A |");
     });
 
-    it("should format downgraded packages with markdown", () => {
+    it("should format downgraded packages with markdown table", () => {
       const diff: ResolutionDiff = {
         dependencies: [
           {
@@ -174,10 +178,10 @@ describe("MarkdownReporter", () => {
       const result = reporter.report(diff);
 
       expect(result).toContain("### Downgraded Packages");
-      expect(result).toContain("**downgraded-package**");
-      expect(result).toContain("`2.0.0`");
-      expect(result).toContain("`1.0.0`");
-      expect(result).toContain("(downgraded)");
+      expect(result).toContain("| Package | From Version | To Version |");
+      expect(result).toContain("| **downgraded-package** ⬇️ |");
+      expect(result).toContain("| `2.0.0` |");
+      expect(result).toContain("| `1.0.0` |");
     });
 
     it("should handle empty diff", () => {
