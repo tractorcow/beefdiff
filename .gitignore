@@ -10,6 +10,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Lockfiles (we use pnpm)
+package-lock.json
+yarn.lock
+
 # OS files
 .DS_Store
 Thumbs.db
