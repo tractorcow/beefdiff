@@ -5,15 +5,16 @@ import type {
   Resolution,
   ComposerLockfile,
 } from "../types/index.js";
+import { parseJson } from "./loader-utils.js";
 
 export class ComposerResolver implements Resolver {
   canResolve(filename: string): boolean {
-    return filename === "composer.lock" || filename.endsWith("/composer.lock");
+    return /(^|\/)composer\.lock$/i.test(filename);
   }
 
   async resolve(filePath: string): Promise<Resolution> {
     const content = await readFile(filePath, "utf-8");
-    const lockfile = JSON.parse(content) as ComposerLockfile;
+    const lockfile = this.parseLockfile(content);
 
     const dependencies: Package[] = [];
     const devDependencies: Package[] = [];
@@ -54,5 +55,15 @@ export class ComposerResolver implements Resolver {
       dependencies,
       devDependencies,
     };
+  }
+
+  private parseLockfile(content: string): ComposerLockfile {
+    try {
+      return parseJson(content) as ComposerLockfile;
+    } catch (error) {
+      throw new Error(
+        `Failed to parse composer.lock: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
   }
 }

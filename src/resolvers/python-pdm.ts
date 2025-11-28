@@ -1,10 +1,10 @@
 import { readFile } from "fs/promises";
 import type { Package, Resolution, Resolver, PdmLock } from "../types/index.js";
+import { parseJson } from "./loader-utils.js";
 
 export class PythonPdmResolver implements Resolver {
   canResolve(filename: string): boolean {
-    const basename = filename.split("/").pop() || filename;
-    return basename === "pdm.lock" || basename.endsWith("/pdm.lock");
+    return /(^|\/)pdm\.lock$/i.test(filename);
   }
 
   async resolve(filePath: string): Promise<Resolution> {
@@ -13,7 +13,7 @@ export class PythonPdmResolver implements Resolver {
   }
 
   private parseContent(content: string): Resolution {
-    const lockfile = JSON.parse(content) as PdmLock;
+    const lockfile = this.parseLockfile(content);
 
     const dependencies: Package[] = [];
     const devDependencies: Package[] = [];
@@ -52,5 +52,15 @@ export class PythonPdmResolver implements Resolver {
       dependencies,
       devDependencies,
     };
+  }
+
+  private parseLockfile(content: string): PdmLock {
+    try {
+      return parseJson(content) as PdmLock;
+    } catch (error) {
+      throw new Error(
+        `Failed to parse pdm.lock: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
   }
 }

@@ -197,6 +197,42 @@ describe("run", () => {
     expect(consoleLogSpy).toHaveBeenCalled();
   });
 
+  it("should work with python resolver", async () => {
+    const sourceFile = join(fixturesDir, "python", "requirements", "basic.txt");
+    const targetFile = join(fixturesDir, "python", "requirements", "basic.txt");
+    process.argv = [
+      "node",
+      "beefdiff",
+      "--resolver",
+      "python",
+      sourceFile,
+      targetFile,
+    ];
+
+    const exitCode = await run();
+
+    expect(exitCode).toBe(0);
+    expect(consoleLogSpy).toHaveBeenCalled();
+  });
+
+  it("should work with yarn resolver", async () => {
+    const sourceFile = join(fixturesDir, "yarn", "basic.lock");
+    const targetFile = join(fixturesDir, "yarn", "basic.lock");
+    process.argv = [
+      "node",
+      "beefdiff",
+      "--resolver",
+      "yarn",
+      sourceFile,
+      targetFile,
+    ];
+
+    const exitCode = await run();
+
+    expect(exitCode).toBe(0);
+    expect(consoleLogSpy).toHaveBeenCalled();
+  });
+
   it("should handle short format option -f", async () => {
     const sourceFile = join(fixturesDir, "npm", "version-old.json");
     const targetFile = join(fixturesDir, "npm", "version-new.json");

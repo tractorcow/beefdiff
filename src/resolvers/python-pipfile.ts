@@ -5,11 +5,11 @@ import type {
   Resolver,
   PipfileLock,
 } from "../types/index.js";
+import { parseJson } from "./loader-utils.js";
 
 export class PythonPipfileResolver implements Resolver {
   canResolve(filename: string): boolean {
-    const basename = filename.split("/").pop() || filename;
-    return basename === "Pipfile.lock" || basename.endsWith("/Pipfile.lock");
+    return /(^|\/)Pipfile\.lock$/i.test(filename);
   }
 
   async resolve(filePath: string): Promise<Resolution> {
@@ -18,7 +18,7 @@ export class PythonPipfileResolver implements Resolver {
   }
 
   private parseContent(content: string): Resolution {
-    const lockfile = JSON.parse(content) as PipfileLock;
+    const lockfile = this.parseLockfile(content);
 
     const dependencies: Package[] = [];
     const devDependencies: Package[] = [];
@@ -52,6 +52,16 @@ export class PythonPipfileResolver implements Resolver {
       dependencies,
       devDependencies,
     };
+  }
+
+  private parseLockfile(content: string): PipfileLock {
+    try {
+      return parseJson(content) as PipfileLock;
+    } catch (error) {
+      throw new Error(
+        `Failed to parse Pipfile.lock: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
   }
 
   private extractVersionFromPipfile(version: unknown): string | null {

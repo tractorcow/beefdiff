@@ -107,8 +107,8 @@ describe("YarnResolver", () => {
         version: "4.17.21",
       });
       expect(result.devDependencies).toContainEqual({
-        name: "pytest",
-        version: "7.4.0",
+        name: "jest",
+        version: "29.7.0",
       });
     });
 
@@ -279,6 +279,14 @@ describe("YarnResolver", () => {
 
     it("should throw error for completely invalid lockfile", async () => {
       const fixturePath = join(fixturesDir, "invalid.lock");
+
+      await expect(resolver.resolve(fixturePath)).rejects.toThrow(
+        "Failed to parse yarn.lock file"
+      );
+    });
+
+    it("should throw error for lockfile with merge conflict markers", async () => {
+      const fixturePath = join(fixturesDir, "merge-conflict.lock");
 
       await expect(resolver.resolve(fixturePath)).rejects.toThrow(
         "Failed to parse yarn.lock file"

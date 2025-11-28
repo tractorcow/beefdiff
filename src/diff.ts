@@ -21,16 +21,8 @@ export function diffResolutions(
 }
 
 function diffPackages(source: Package[], target: Package[]): PackageChange[] {
-  const sourceMap = new Map<string, Package>();
-  const targetMap = new Map<string, Package>();
-
-  for (const pkg of source) {
-    sourceMap.set(pkg.name, pkg);
-  }
-
-  for (const pkg of target) {
-    targetMap.set(pkg.name, pkg);
-  }
+  const sourceMap = new Map(source.map((pkg) => [pkg.name, pkg]));
+  const targetMap = new Map(target.map((pkg) => [pkg.name, pkg]));
 
   const changes: PackageChange[] = [];
 
@@ -85,52 +77,43 @@ function getVersionChangeType(
     return null;
   }
 
-  // Parse versions to get base version numbers for comparison
   const fromParsed = parse(from);
   const toParsed = parse(to);
-
   if (!fromParsed || !toParsed) {
     return null;
   }
 
-  // Compare base versions (major.minor.patch without prerelease/build metadata)
-  // This handles edge cases where semver.diff() might return "major" for prerelease
-  // transitions even when base versions are the same
-  let versionChangeType: VersionChangeType;
+  // Compare base versions (major.minor.patch)
   if (fromParsed.major !== toParsed.major) {
-    versionChangeType = VersionChangeType.Major;
-  } else if (fromParsed.minor !== toParsed.minor) {
-    versionChangeType = VersionChangeType.Minor;
-  } else if (fromParsed.patch !== toParsed.patch) {
-    versionChangeType = VersionChangeType.Patch;
-  } else {
-    // Same base version (major.minor.patch), check if it's a prerelease change
-    // Use semver.diff() to detect prerelease transitions
-    const changeType = diff(from, to);
-    if (changeType === "prerelease" || changeType === "major") {
-      // Same base version but different prerelease identifiers or prerelease -> stable
-      // Treat as patch change
-      versionChangeType = VersionChangeType.Patch;
-    } else if (changeType === "minor" || changeType === "patch") {
-      // This shouldn't happen if base versions are the same, but handle it
-      versionChangeType =
-        changeType === "minor"
-          ? VersionChangeType.Minor
-          : VersionChangeType.Patch;
-    } else {
-      // No change or unknown, return null
-      return null;
-    }
+    return createVersionChangeInfo(VersionChangeType.Major, to, from);
+  }
+  if (fromParsed.minor !== toParsed.minor) {
+    return createVersionChangeInfo(VersionChangeType.Minor, to, from);
+  }
+  if (fromParsed.patch !== toParsed.patch) {
+    return createVersionChangeInfo(VersionChangeType.Patch, to, from);
   }
 
-  // Determine direction using semver.gt() for safer comparison
-  const isUpgrade = gt(to, from);
-  const direction = isUpgrade
-    ? PackageChangeType.Upgraded
-    : PackageChangeType.Downgraded;
+  // Base versions are the same - check for prerelease/build metadata differences
+  const changeType = diff(from, to);
+  if (!changeType) {
+    // Versions are identical (including build metadata differences)
+    return null;
+  }
 
+  // Any change type (prerelease or other) on same base version is treated as patch
+  return createVersionChangeInfo(VersionChangeType.Patch, to, from);
+}
+
+function createVersionChangeInfo(
+  type: VersionChangeType,
+  to: string,
+  from: string
+): VersionChangeInfo {
   return {
-    type: versionChangeType,
-    direction,
+    type,
+    direction: gt(to, from)
+      ? PackageChangeType.Upgraded
+      : PackageChangeType.Downgraded,
   };
 }

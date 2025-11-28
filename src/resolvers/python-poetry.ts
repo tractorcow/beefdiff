@@ -1,16 +1,15 @@
 import { readFile } from "fs/promises";
-import { parse as parseToml } from "@iarna/toml";
 import type {
   Package,
   Resolution,
   Resolver,
   PoetryLock,
 } from "../types/index.js";
+import { parseToml } from "./loader-utils.js";
 
 export class PythonPoetryResolver implements Resolver {
   canResolve(filename: string): boolean {
-    const basename = filename.split("/").pop() || filename;
-    return basename === "poetry.lock" || basename.endsWith("/poetry.lock");
+    return /(^|\/)poetry\.lock$/i.test(filename);
   }
 
   async resolve(filePath: string): Promise<Resolution> {
@@ -19,7 +18,7 @@ export class PythonPoetryResolver implements Resolver {
   }
 
   private parseContent(content: string): Resolution {
-    const lockfile = parseToml(content) as PoetryLock;
+    const lockfile = this.parseLockfile(content);
 
     const dependencies: Package[] = [];
     const devDependencies: Package[] = [];
@@ -39,9 +38,7 @@ export class PythonPoetryResolver implements Resolver {
 
           // Check if it's a dev dependency
           // In poetry.lock, dev dependencies have category === "dev"
-          const isDev =
-            ("category" in pkg && pkg.category === "dev") ||
-            ("optional" in pkg && pkg.optional === true);
+          const isDev = "category" in pkg && pkg.category === "dev";
 
           if (isDev) {
             devDependencies.push(packageInfo);
@@ -56,5 +53,15 @@ export class PythonPoetryResolver implements Resolver {
       dependencies,
       devDependencies,
     };
+  }
+
+  private parseLockfile(content: string): PoetryLock {
+    try {
+      return parseToml(content) as PoetryLock;
+    } catch (error) {
+      throw new Error(
+        `Failed to parse poetry.lock: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
   }
 }

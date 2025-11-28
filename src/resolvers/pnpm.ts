@@ -1,22 +1,20 @@
 import { readFile } from "fs/promises";
-import { parse } from "yaml";
 import type {
   Resolver,
   Package,
   Resolution,
   PnpmLockfile,
 } from "../types/index.js";
+import { parseYaml } from "./loader-utils.js";
 
 export class PnpmResolver implements Resolver {
   canResolve(filename: string): boolean {
-    return (
-      filename === "pnpm-lock.yaml" || filename.endsWith("/pnpm-lock.yaml")
-    );
+    return /(^|\/)pnpm-lock\.yaml$/i.test(filename);
   }
 
   async resolve(filePath: string): Promise<Resolution> {
     const content = await readFile(filePath, "utf-8");
-    const lockfile = parse(content) as PnpmLockfile;
+    const lockfile = this.parseLockfile(content);
 
     const dependencies: Package[] = [];
     const devDependencies: Package[] = [];
@@ -132,5 +130,15 @@ export class PnpmResolver implements Resolver {
     }
 
     return key;
+  }
+
+  private parseLockfile(content: string): PnpmLockfile {
+    try {
+      return parseYaml(content) as PnpmLockfile;
+    } catch (error) {
+      throw new Error(
+        `Failed to parse pnpm-lock.yaml: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
   }
 }

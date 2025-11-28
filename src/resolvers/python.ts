@@ -1,7 +1,7 @@
 import { readFile } from "fs/promises";
 import type { Resolver, Resolution } from "../types/index.js";
 import { PythonLockfileFormat } from "../types/index.js";
-import { tryParseJson, tryParseToml } from "./python-utils.js";
+import { tryParseJson, tryParseToml } from "./loader-utils.js";
 import { PythonRequirementsResolver } from "./python-requirements.js";
 import { PythonPipfileResolver } from "./python-pipfile.js";
 import { PythonPoetryResolver } from "./python-poetry.js";

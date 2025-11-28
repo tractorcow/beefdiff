@@ -34,8 +34,8 @@ describe("PythonPipfileResolver", () => {
       // Test with just "/"
       expect(resolver.canResolve("/")).toBe(false);
 
-      // Test with filename that doesn't match
-      expect(resolver.canResolve("pipfile.lock")).toBe(false);
+      // Test with filename that doesn't match (case-insensitive, so this matches)
+      expect(resolver.canResolve("pipfile.lock")).toBe(true);
       expect(resolver.canResolve("Pipfile")).toBe(false);
       expect(resolver.canResolve("Pipfile.lock.bak")).toBe(false);
     });
