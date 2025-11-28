@@ -31,6 +31,10 @@ All Python lockfile formats are automatically detected based on file content, so
 
 ```bash
 npm install -g @tractorcow/beefdiff
+# or
+pnpm add -g @tractorcow/beefdiff
+# or
+yarn global add @tractorcow/beefdiff
 ```
 
 Or use with `npx`:
@@ -120,24 +124,24 @@ The action supports npm, yarn, pnpm, composer, Python, and Ruby lockfiles, and c
 ### Prerequisites
 
 - Node.js 22 or higher
-- npm
+- pnpm (recommended) or npm
 
 ### Setup
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### Build
 
 ```bash
-npm run build
+pnpm run build
 ```
 
 ### Clean
 
 ```bash
-npm run clean
+pnpm run clean
 ```
 
 ## License

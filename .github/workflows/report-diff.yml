@@ -3,8 +3,8 @@ name: Package Lock Diff
 on:
   pull_request:
     paths:
-      - 'package-lock.json'
-      - '**/package-lock.json'
+      - 'pnpm-lock.yaml'
+      - '**/pnpm-lock.yaml'
 
 jobs:
   package-lock-diff:
@@ -20,3 +20,6 @@ jobs:
 
       - name: Package lock diff
         uses: ./action
+        with:
+          filename: 'pnpm-lock.yaml'
+          resolver: 'pnpm'

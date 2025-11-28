@@ -18,16 +18,22 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
           node-version: "24"
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Run linter
-        run: npm run lint
+        run: pnpm run lint
 
       - name: Check commit messages
         if: github.event_name == 'pull_request'
@@ -36,10 +42,10 @@ jobs:
           BASE_SHA=${{ github.event.pull_request.base.sha }}
           HEAD_SHA=${{ github.event.pull_request.head.sha }}
           # Check all commits in the PR
-          npx commitlint --from $BASE_SHA --to $HEAD_SHA --verbose
+          pnpm exec commitlint --from $BASE_SHA --to $HEAD_SHA --verbose
 
       - name: Build project
-        run: npm run build
+        run: pnpm run build
 
       - name: Run tests with coverage
-        run: npm run test:coverage
+        run: pnpm run test:coverage
