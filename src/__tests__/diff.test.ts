@@ -200,6 +200,55 @@ describe("diffResolutions", () => {
     expect(result.dependencies).toHaveLength(0);
   });
 
+  it("should not report packages with same version but different build metadata", () => {
+    const source: Resolution = {
+      dependencies: [{ name: "package", version: "1.0.0+build.1" }],
+      devDependencies: [],
+    };
+
+    const target: Resolution = {
+      dependencies: [{ name: "package", version: "1.0.0+build.2" }],
+      devDependencies: [],
+    };
+
+    const result = diffResolutions(source, target);
+
+    // Build metadata differences are ignored in semver, so should be treated as same version
+    expect(result.dependencies).toHaveLength(0);
+  });
+
+  it("should not report packages with identical prerelease versions", () => {
+    const source: Resolution = {
+      dependencies: [{ name: "package", version: "1.0.0-alpha.1" }],
+      devDependencies: [],
+    };
+
+    const target: Resolution = {
+      dependencies: [{ name: "package", version: "1.0.0-alpha.1" }],
+      devDependencies: [],
+    };
+
+    const result = diffResolutions(source, target);
+
+    expect(result.dependencies).toHaveLength(0);
+  });
+
+  it("should not report packages with same version and same build metadata", () => {
+    const source: Resolution = {
+      dependencies: [{ name: "package", version: "1.0.0+build.1" }],
+      devDependencies: [],
+    };
+
+    const target: Resolution = {
+      dependencies: [{ name: "package", version: "1.0.0+build.1" }],
+      devDependencies: [],
+    };
+
+    const result = diffResolutions(source, target);
+
+    expect(result.dependencies).toHaveLength(0);
+  });
+
   it("should handle both dependencies and devDependencies", () => {
     const source: Resolution = {
       dependencies: [{ name: "dep", version: "1.0.0" }],

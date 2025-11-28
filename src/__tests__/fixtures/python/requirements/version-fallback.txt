@@ -1,0 +1,6 @@
+requests==2.31.0
+package-range1>=1.0
+package-range2~=2.0
+package-short==1.2
+package-long==1.2.3.4
+package-prerelease==1.2.3-alpha.1

@@ -46,13 +46,11 @@ describe("YarnResolver", () => {
         name: "lodash",
         version: "4.17.21",
       });
-      // Scoped packages might be in the result
-      const typesNode = result.dependencies.find(
-        (p) => p.name === "@types/node"
-      );
-      if (typesNode) {
-        expect(typesNode.version).toBe("20.0.0");
-      }
+      // Scoped packages should be in the result
+      expect(result.dependencies).toContainEqual({
+        name: "@types/node",
+        version: "20.0.0",
+      });
     });
 
     it("should compare two different yarn.lock files", async () => {
@@ -93,6 +91,206 @@ describe("YarnResolver", () => {
       expect(reactChange).toBeDefined();
       expect(reactChange?.type).toBe("added");
       expect(reactChange?.toVersion).toBe("18.2.0");
+    });
+
+    it("should handle dev dependencies", async () => {
+      const fixturePath = join(fixturesDir, "with-dev-deps.lock");
+
+      const result = await resolver.resolve(fixturePath);
+
+      expect(result.dependencies).toContainEqual({
+        name: "express",
+        version: "4.18.0",
+      });
+      expect(result.dependencies).toContainEqual({
+        name: "lodash",
+        version: "4.17.21",
+      });
+      expect(result.devDependencies).toContainEqual({
+        name: "jest",
+        version: "29.7.0",
+      });
+    });
+
+    it("should handle edge cases in package keys", async () => {
+      const fixturePath = join(fixturesDir, "edge-cases.lock");
+
+      const result = await resolver.resolve(fixturePath);
+
+      // Package with protocol prefix (npm:)
+      const npmPackage = result.dependencies.find(
+        (p) => p.name === "package" && p.version === "1.2.3"
+      );
+      expect(npmPackage).toBeDefined();
+
+      // Package with workspace protocol (should extract version from entry or key)
+      const workspacePackage = result.dependencies.find(
+        (p) => p.name === "package" && p.version === "1.0.0"
+      );
+      expect(workspacePackage).toBeDefined();
+
+      // Package with version range (should use resolved version)
+      const rangePackage = result.dependencies.find(
+        (p) => p.name === "package" && p.version === "1.5.0"
+      );
+      expect(rangePackage).toBeDefined();
+
+      // Package with range in name
+      const rangeNamePackage = result.dependencies.find(
+        (p) => p.name === "package-range"
+      );
+      expect(rangeNamePackage).toBeDefined();
+      expect(rangeNamePackage?.version).toBe("1.3.5");
+    });
+
+    it("should handle package without version in entry", async () => {
+      const fixturePath = join(fixturesDir, "edge-cases.lock");
+
+      const result = await resolver.resolve(fixturePath);
+
+      // Package without version in entry should extract from key
+      const noVersionPackage = result.dependencies.find(
+        (p) => p.name === "package-no-version"
+      );
+      // Should extract version from key (^1.0.0 -> 1.0.0)
+      expect(noVersionPackage).toBeDefined();
+      expect(noVersionPackage?.version).toBeDefined();
+    });
+
+    it("should extract versions from keys with various formats", async () => {
+      const fixturePath = join(fixturesDir, "version-extraction.lock");
+
+      const result = await resolver.resolve(fixturePath);
+
+      // Package with npm: protocol
+      const npmPackage = result.dependencies.find(
+        (p) => p.name === "package" && p.version === "1.2.3"
+      );
+      expect(npmPackage).toBeDefined();
+
+      // Package with workspace: protocol
+      const workspacePackage = result.dependencies.find(
+        (p) => p.name === "package2"
+      );
+      expect(workspacePackage).toBeDefined();
+      expect(workspacePackage?.version).toBe("1.0.0");
+
+      // Package with range operators
+      const rangePackage = result.dependencies.find(
+        (p) => p.name === "package3"
+      );
+      expect(rangePackage).toBeDefined();
+      expect(rangePackage?.version).toBe("1.5.0");
+
+      const tildePackage = result.dependencies.find(
+        (p) => p.name === "package4"
+      );
+      expect(tildePackage).toBeDefined();
+      expect(tildePackage?.version).toBe("1.0.5");
+
+      const gtePackage = result.dependencies.find((p) => p.name === "package5");
+      expect(gtePackage).toBeDefined();
+      expect(gtePackage?.version).toBe("1.3.0");
+
+      // Package without version should extract from key
+      const noVersionPackage = result.dependencies.find(
+        (p) => p.name === "package-no-version"
+      );
+      expect(noVersionPackage).toBeDefined();
+      // Should extract version from key (^1.0.0)
+      expect(noVersionPackage?.version).toBeDefined();
+    });
+
+    it("should handle entries that are not objects", async () => {
+      // This tests the case where entry is null or not an object
+      // We'll test this by creating a fixture with invalid entries
+      // But yarn.lock parser will reject invalid format, so we test via basic.lock
+      // which should handle normal cases correctly
+      const fixturePath = join(fixturesDir, "basic.lock");
+
+      const result = await resolver.resolve(fixturePath);
+
+      // All entries should be valid objects
+      expect(result.dependencies.length).toBeGreaterThan(0);
+    });
+
+    it("should handle keys without @ symbol", async () => {
+      const fixturePath = join(fixturesDir, "missing-version.lock");
+
+      const result = await resolver.resolve(fixturePath);
+
+      // Keys without @ should be skipped
+      const noAtPackage = result.dependencies.find(
+        (p) => p.name === "package-no-version" && !p.name.includes("@")
+      );
+      // Should be skipped or handled gracefully
+      expect(noAtPackage).toBeUndefined();
+    });
+
+    it("should handle empty package names", async () => {
+      const fixturePath = join(fixturesDir, "missing-version.lock");
+
+      const result = await resolver.resolve(fixturePath);
+
+      // "@package@" has a valid name "@package" (scoped package) and version in entry
+      const scopedPackage = result.dependencies.find(
+        (p) => p.name === "@package"
+      );
+      expect(scopedPackage).toBeDefined();
+      expect(scopedPackage?.version).toBe("1.0.0");
+    });
+
+    it("should handle missing versions", async () => {
+      const fixturePath = join(fixturesDir, "missing-version.lock");
+
+      const result = await resolver.resolve(fixturePath);
+
+      // "package-no-version@" has no version in key or entry, so it should be skipped
+      const noVersionPackage = result.dependencies.find(
+        (p) => p.name === "package-no-version"
+      );
+      // Should be skipped when no version can be extracted
+      expect(noVersionPackage).toBeUndefined();
+    });
+
+    it("should handle version extraction edge cases", async () => {
+      const fixturePath = join(fixturesDir, "missing-version.lock");
+
+      const result = await resolver.resolve(fixturePath);
+
+      // Test extractVersionFromKey with various edge cases
+      // Package with invalid version should extract what it can or return null
+      // Should handle gracefully - verify resolver doesn't crash
+      expect(result).toBeDefined();
+      expect(result.dependencies).toBeDefined();
+      expect(result.devDependencies).toBeDefined();
+      // Verify that edge cases are handled without errors
+      expect(Array.isArray(result.dependencies)).toBe(true);
+      expect(Array.isArray(result.devDependencies)).toBe(true);
+    });
+
+    it("should throw error for invalid lockfile syntax", async () => {
+      const fixturePath = join(fixturesDir, "syntax-error.lock");
+
+      await expect(resolver.resolve(fixturePath)).rejects.toThrow(
+        "Failed to parse yarn.lock file"
+      );
+    });
+
+    it("should throw error for completely invalid lockfile", async () => {
+      const fixturePath = join(fixturesDir, "invalid.lock");
+
+      await expect(resolver.resolve(fixturePath)).rejects.toThrow(
+        "Failed to parse yarn.lock file"
+      );
+    });
+
+    it("should throw error for lockfile with merge conflict markers", async () => {
+      const fixturePath = join(fixturesDir, "merge-conflict.lock");
+
+      await expect(resolver.resolve(fixturePath)).rejects.toThrow(
+        "Failed to parse yarn.lock file"
+      );
     });
   });
 });

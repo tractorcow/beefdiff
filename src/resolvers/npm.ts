@@ -9,18 +9,16 @@ import type {
   NpmLockfileV3,
   NpmLockfileDependency,
 } from "../types/index.js";
+import { parseJson } from "./loader-utils.js";
 
 export class NpmResolver implements Resolver {
   canResolve(filename: string): boolean {
-    return (
-      filename === "package-lock.json" ||
-      filename.endsWith("/package-lock.json")
-    );
+    return /(^|\/)package-lock\.json$/i.test(filename);
   }
 
   async resolve(filePath: string): Promise<Resolution> {
     const content = await readFile(filePath, "utf-8");
-    const parsed = JSON.parse(content) as NpmLockfile;
+    const parsed = this.parseLockfile(content);
 
     const lockfileVersion = parsed.lockfileVersion ?? 1;
 
@@ -172,6 +170,16 @@ export class NpmResolver implements Resolver {
         continue;
       }
       dependencies.push(packageInfo);
+    }
+  }
+
+  private parseLockfile(content: string): NpmLockfile {
+    try {
+      return parseJson(content) as NpmLockfile;
+    } catch (error) {
+      throw new Error(
+        `Failed to parse package-lock.json: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 }

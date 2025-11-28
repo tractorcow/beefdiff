@@ -1,0 +1,18 @@
+{
+  "_meta": {
+    "hash": {
+      "sha256": "abc123"
+    },
+    "pipfile-spec": 6,
+    "requires": {
+      "python_version": "3.9"
+    },
+    "sources": [
+      {
+        "name": "pypi",
+        "url": "https://pypi.org/simple",
+        "verify_ssl": true
+      }
+    ]
+  }
+}

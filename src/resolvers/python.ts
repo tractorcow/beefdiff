@@ -1,136 +1,102 @@
 import { readFile } from "fs/promises";
-import type { Resolver, Package, Resolution } from "../types/index.js";
+import type { Resolver, Resolution } from "../types/index.js";
+import { PythonLockfileFormat } from "../types/index.js";
+import { tryParseJson, tryParseToml } from "./loader-utils.js";
+import { PythonRequirementsResolver } from "./python-requirements.js";
+import { PythonPipfileResolver } from "./python-pipfile.js";
+import { PythonPoetryResolver } from "./python-poetry.js";
+import { PythonPdmResolver } from "./python-pdm.js";
 
 export class PythonResolver implements Resolver {
   canResolve(filename: string): boolean {
-    // Match requirements*.txt pattern (e.g., requirements.txt, requirements-dev.txt)
+    // Accept any Python-related filename - we'll detect format from content
     const basename = filename.split("/").pop() || filename;
-    return /^requirements.*\.txt$/.test(basename);
+    return /^(requirements.*\.(txt|lock)|(poetry|Pipfile|pdm)\.lock)$/i.test(
+      basename
+    );
   }
 
   async resolve(filePath: string): Promise<Resolution> {
     const content = await readFile(filePath, "utf-8");
-    const lines = content.split("\n");
+    const format = this.detectFormat(content);
 
-    const dependencies: Package[] = [];
-    const devDependencies: Package[] = [];
-
-    for (const line of lines) {
-      const trimmed = line.trim();
-
-      // Skip empty lines and comments
-      if (!trimmed || trimmed.startsWith("#")) {
-        continue;
+    switch (format) {
+      case PythonLockfileFormat.Requirements: {
+        const resolver = new PythonRequirementsResolver();
+        return resolver.resolve(filePath);
       }
-
-      // Skip includes (-r, --requirement)
-      if (trimmed.startsWith("-r ") || trimmed.startsWith("--requirement ")) {
-        continue;
+      case PythonLockfileFormat.Pipfile: {
+        const resolver = new PythonPipfileResolver();
+        return resolver.resolve(filePath);
       }
-
-      // Skip editable installs (-e, --editable)
-      if (trimmed.startsWith("-e ") || trimmed.startsWith("--editable ")) {
-        continue;
+      case PythonLockfileFormat.Poetry: {
+        const resolver = new PythonPoetryResolver();
+        return resolver.resolve(filePath);
       }
-
-      // Parse package line
-      const packageInfo = this.parsePackageLine(trimmed);
-      if (packageInfo) {
-        // requirements.txt doesn't have a standard devDependencies concept,
-        // but some projects use requirements-dev.txt or similar patterns
-        // For now, we'll put everything in dependencies
-        dependencies.push(packageInfo);
+      case PythonLockfileFormat.Pdm: {
+        const resolver = new PythonPdmResolver();
+        return resolver.resolve(filePath);
       }
+      default:
+        throw new Error(`Unsupported Python lockfile format: ${format}`);
     }
-
-    return {
-      dependencies,
-      devDependencies,
-    };
   }
 
-  private parsePackageLine(line: string): Package | null {
-    // Remove inline comments
-    const commentIndex = line.indexOf("#");
-    const cleanLine =
-      commentIndex >= 0 ? line.substring(0, commentIndex).trim() : line.trim();
+  private detectFormat(content: string): PythonLockfileFormat {
+    const trimmed = content.trim();
 
-    if (!cleanLine) {
-      return null;
-    }
-
-    // Handle URL-based installs: package @ https://...
-    const urlMatch = cleanLine.match(/^(.+?)\s*@\s*(https?|git\+|file\+)/);
-    if (urlMatch) {
-      // For now, we'll skip URL-based installs as they don't have clear versions
-      return null;
-    }
-
-    // Handle package with extras: package[extra]==1.0.0
-    const extrasMatch = cleanLine.match(/^(.+?)\[.+\]\s*(.+)$/);
-    if (extrasMatch) {
-      const packageName = extrasMatch[1].trim();
-      const versionSpec = extrasMatch[2].trim();
-      const version = this.extractVersion(versionSpec);
-      if (version && packageName) {
-        return { name: packageName, version };
-      }
-    }
-
-    // Handle standard package specifiers: package==1.0.0, package>=1.0.0, etc.
-    // Split on version specifiers: ==, >=, <=, >, <, ~=, !=
-    const versionMatch = cleanLine.match(
-      /^(.+?)\s*(==|>=|<=|>|<|~=|!=)\s*(.+)$/
-    );
-    if (versionMatch) {
-      const packageName = versionMatch[1].trim();
-      const operator = versionMatch[2];
-      const versionSpec = versionMatch[3].trim();
-
-      // For exact version (==), use it directly
-      if (operator === "==") {
-        // Handle multiple == (e.g., package==1.0.0==1.0.0 is invalid, but handle gracefully)
-        const version = versionSpec.split("==")[0].trim();
-        if (version && packageName) {
-          return { name: packageName, version };
-        }
+    // Try JSON first (Pipfile.lock or pdm.lock)
+    const json = tryParseJson(trimmed);
+    if (json !== null) {
+      // Skip empty JSON objects (allow fallback to requirements.txt)
+      const keys = Object.keys(json);
+      if (keys.length === 0) {
+        // Empty JSON, continue to other formats
       } else {
-        // For other operators, try to extract a version
-        // This is not ideal since it's not a lockfile, but we'll do our best
-        const version = this.extractVersion(versionSpec);
-        if (version && packageName) {
-          return { name: packageName, version };
+        // Pipfile.lock has _meta key
+        if ("_meta" in json) {
+          return PythonLockfileFormat.Pipfile;
         }
+        // pdm.lock has package array (required for parsing)
+        // Check for package array first, then other PDM-specific keys
+        if ("package" in json && Array.isArray(json.package)) {
+          return PythonLockfileFormat.Pdm;
+        }
+        // If it has PDM-specific keys but no package array, it might be malformed
+        // but we'll still try to detect it as PDM (parser will handle errors)
+        if (
+          ("metadata" in json || "content_hash" in json) &&
+          !("_meta" in json)
+        ) {
+          return PythonLockfileFormat.Pdm;
+        }
+        // Valid JSON with content but doesn't match any known Python lockfile format
+        throw new Error(
+          "File is valid JSON but does not match any known Python lockfile format (Pipfile.lock, pdm.lock)"
+        );
       }
-    } else {
-      // No version specifier - just package name
-      // This is valid in requirements.txt but we can't compare versions
-      // Skip it for now
-      return null;
     }
 
-    return null;
-  }
-
-  private extractVersion(versionSpec: string): string | null {
-    // Remove whitespace
-    const cleaned = versionSpec.trim();
-
-    // Handle version ranges: >=1.0.0,<2.0.0
-    // For now, take the first version we find
-    const firstVersionMatch = cleaned.match(/(\d+\.\d+\.\d+[^\s,]*)/);
-    if (firstVersionMatch) {
-      return firstVersionMatch[1];
+    // Try TOML (poetry.lock)
+    const toml = tryParseToml(trimmed);
+    if (toml !== null) {
+      // Skip empty TOML objects (allow fallback to requirements.txt)
+      const keys = Object.keys(toml);
+      if (keys.length === 0) {
+        // Empty TOML, continue to requirements.txt
+      } else {
+        // poetry.lock has [[package]] array sections
+        if ("package" in toml && Array.isArray(toml.package)) {
+          return PythonLockfileFormat.Poetry;
+        }
+        // Valid TOML with content but doesn't match poetry.lock format
+        throw new Error(
+          "File is valid TOML but does not match poetry.lock format"
+        );
+      }
     }
 
-    // Try to match any version-like string
-    const versionMatch = cleaned.match(
-      /(\d+\.\d+(?:\.\d+)?(?:[a-zA-Z0-9.-]*)?)/
-    );
-    if (versionMatch) {
-      return versionMatch[1];
-    }
-
-    return null;
+    // Fallback to requirements.txt format (plain text)
+    return PythonLockfileFormat.Requirements;
   }
 }

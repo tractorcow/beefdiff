@@ -1,6 +1,27 @@
 # @tractorcow/beefdiff
 
-Compare lockfile dependencies between two versions. Supports npm (`package-lock.json`), yarn (`yarn.lock`), composer (`composer.lock`), pnpm (`pnpm-lock.yaml`), and Python (`requirements*.txt`, e.g., `requirements.txt`, `requirements-dev.txt`) with detailed version change reports.
+Compare lockfile dependencies between two versions. Supports multiple package managers across different ecosystems with detailed version change reports.
+
+## Supported Lockfiles
+
+### Node.js Ecosystem
+
+- **npm**: `package-lock.json`
+- **yarn**: `yarn.lock`
+- **pnpm**: `pnpm-lock.yaml`
+
+### Python Ecosystem
+
+- **pip/requirements**: `requirements.txt`, `requirements-dev.txt`, `requirements*.txt`, `requirements.lock`
+- **Poetry**: `poetry.lock`
+- **Pipenv**: `Pipfile.lock`
+- **PDM**: `pdm.lock`
+
+### PHP Ecosystem
+
+- **Composer**: `composer.lock`
+
+All Python lockfile formats are automatically detected based on file content, so the tool works even with non-standard filenames.
 
 ## Installation
 

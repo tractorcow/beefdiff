@@ -68,7 +68,7 @@ SUPPORTED LOCKFILES:
     - npm: package-lock.json
     - composer: composer.lock
     - pnpm: pnpm-lock.yaml
-    - python: requirements*.txt (e.g., requirements.txt, requirements-dev.txt)
+    - python: requirements*.txt, poetry.lock, Pipfile.lock, pdm.lock
     - yarn: yarn.lock
 `);
 }

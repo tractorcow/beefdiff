@@ -1,0 +1,4 @@
+requests==2.31.0
+# This is a comment-only line
+flask==3.0.0
+package==1.0.0#inline comment with no space

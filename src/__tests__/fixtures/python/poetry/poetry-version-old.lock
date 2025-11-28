@@ -1,0 +1,19 @@
+[[package]]
+name = "requests"
+version = "2.28.0"
+description = "Python HTTP for Humans."
+category = "main"
+optional = false
+
+[[package]]
+name = "flask"
+version = "2.3.0"
+description = "A simple framework for building complex web applications."
+category = "main"
+optional = false
+
+[[package]]
+name = "numpy"
+version = "1.23.0"
+category = "main"
+optional = false

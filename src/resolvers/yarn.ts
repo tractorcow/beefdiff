@@ -10,16 +10,12 @@ import type {
 
 export class YarnResolver implements Resolver {
   canResolve(filename: string): boolean {
-    return filename === "yarn.lock" || filename.endsWith("/yarn.lock");
+    return /(^|\/)yarn\.lock$/i.test(filename);
   }
 
   async resolve(filePath: string): Promise<Resolution> {
     const content = await readFile(filePath, "utf-8");
-    const parsed = lockfile.parse(content);
-
-    if (parsed.type !== "success") {
-      throw new Error("Failed to parse yarn.lock file");
-    }
+    const parsed = this.parseLockfile(content);
 
     const dependencies: Package[] = [];
     const devDependencies: Package[] = [];
@@ -118,5 +114,19 @@ export class YarnResolver implements Resolver {
 
     // If no version found, return the cleaned version part
     return version;
+  }
+
+  private parseLockfile(content: string): ReturnType<typeof lockfile.parse> {
+    try {
+      const parsed = lockfile.parse(content);
+      if (parsed.type !== "success") {
+        throw new Error("Failed to parse yarn.lock file");
+      }
+      return parsed;
+    } catch (error) {
+      throw new Error(
+        `Failed to parse yarn.lock file: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
   }
 }

@@ -1,0 +1,19 @@
+{
+    "content_hash": "sha256:abc123def456",
+    "lock_version": "4.3",
+    "package": [
+        {
+            "name": "requests",
+            "version": "2.28.0",
+            "groups": ["default"]
+        },
+        {
+            "name": "flask",
+            "version": "2.3.0",
+            "groups": ["default"]
+        }
+    ],
+    "metadata": {
+        "files": {}
+    }
+}
