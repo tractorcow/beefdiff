@@ -19,7 +19,6 @@
     "lint:commits": "commitlint --from HEAD~1 --to HEAD --verbose",
     "format": "prettier --write \"**/*.{ts,json,md}\"",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
-    "test:clean": "find src/__tests__ -type d -name 'tmp-*' -exec rm -rf {} + 2>/dev/null || true",
     "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
     "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage"
   },
